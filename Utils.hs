@@ -6,7 +6,7 @@ module Utils where
 
 import Data.Char (intToDigit)
 import Numeric (showIntAtBase, readHex)
-import Data.List (intercalate, nub, sort, permutations, unfoldr)
+import Data.List (intercalate, nub, sort, permutations, unfoldr, foldl')
 import Control.Applicative ((<$>), (<*>))
 import Control.Monad.State (evalState, get, put)
 import Data.Map (fromListWith, toList)
@@ -103,8 +103,7 @@ fibonacciSeq = unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 2)
 -- >>> integerDigits 41531
 -- [4,1,5,3,1]
 integerDigits :: Int -> [Int]
--- integerDigits n = map (read . (:[])) (show n)
-integerDigits = map (`mod` 10) . takeWhile (> 0) . iterate (`div` 10) 
+integerDigits = reverse . map (`mod` 10) . takeWhile (> 0) . iterate (`div` 10) 
 
 
 -- | Digits to integer
@@ -295,6 +294,12 @@ isDivisible :: Integral a => a -> a -> Bool
 isDivisible p q = mod p q == 0
 
 
+-- | Binomial coefficient
+binomial :: Integral a => a -> a -> a
+binomial n k 
+  | k < 0     = 0
+  | k > n     = 0
+  | otherwise = foldl' (\z i -> z * (n-i+1) `div` i) 1 [1..min k (n-k)]
 
 -- | unfold function
 -- From pp. 73 of Hutton "Programming in Haskell" 
