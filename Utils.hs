@@ -4,7 +4,7 @@ module Utils where
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}  
 
-import Data.Char (intToDigit)
+import Data.Char (intToDigit, digitToInt)
 import Numeric (showIntAtBase, readHex)
 import Data.List (intercalate, sort, permutations, unfoldr, foldl')
 import Control.Applicative ((<$>), (<*>))
@@ -20,7 +20,19 @@ import qualified Data.HashSet as HS
 --              List Utilities
 --------------------------------------------------------------
 
-{- | Round-Robin 
+{- | partition n d xs generates sublist of 
+
+>>> partition 4 2 [1..7]
+[[1,2,3,4],[3,4,5,6]]
+-}
+partition :: Int -> Int -> [a] -> [[a]]
+partition n d xs = helper (length xs) xs
+  where helper l xs
+          | l < n     = []
+          | otherwise = take n xs : helper (l-d) (drop d xs)
+
+
+{- | round robin
 
 >>> roundRobin ["abc", "d", "ef"]
 "adebfc"
@@ -171,12 +183,12 @@ reshapeBy n xs =
 
 {- | Fibonacci sequence
 
->>> take 10 $ fibonacciSeq 
+>>> take 10 $ fibonacciSequence 
 [1,2,3,5,8,13,21,34,55,89]
 
 -}
-fibonacciSeq :: [Int]
-fibonacciSeq = unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 2)
+fibonacciSequence :: [Int]
+fibonacciSequence = unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 2)
 
 
 {- | Integer to digits
@@ -185,8 +197,11 @@ fibonacciSeq = unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 2)
 [4,1,5,3,1]
 
 -}
-integerDigits :: Int -> [Int]
-integerDigits = reverse . map (`mod` 10) . takeWhile (> 0) . iterate (`div` 10) 
+integerDigits :: (Show a, Integral a) => a -> [Int]
+integerDigits = map digitToInt . show
+
+integerDigits' :: Integral a => a -> [a]
+integerDigits' = reverse . map (`mod` 10) . takeWhile (> 0) . iterate (`div` 10) 
 
 
 {- | Digits to integer
@@ -197,7 +212,7 @@ integerDigits = reverse . map (`mod` 10) . takeWhile (> 0) . iterate (`div` 10)
 prop> \n -> (n > 0) ==> n == fromDigits (integerDigits (n :: Int))
 
 -}
-fromDigits :: [Int] -> Int
+fromDigits :: (Read a, Integral a) => [Int] -> a
 fromDigits xs = read $ concatMap show xs
 
 
@@ -264,9 +279,10 @@ primesTo n
 factorInteger :: Int -> [(Int, Int)]
 factorInteger 0 = [(0, 1)]
 factorInteger 1 = [(1, 1)]
-factorInteger n = tally $ factor n
+factorInteger n = frequencies $ factor n
   where
-    ps = (primesTo . round . sqrt . fromIntegral) n
+    ps = primesTo . round . sqrt . fromIntegral $ n
+    factor :: Int -> [Int]
     factor 1 = []
     factor p = k : factor (p `div` k)
       where 
@@ -292,7 +308,7 @@ divisors n = sort [product xs | xs <- cartesianProduct factors]
   where factors = [ map (n^) [0..pow] | (n, pow) <- factorInteger n ]
 
 
-{- | Check if integer is palindrome
+{- | Check if integer is palindrome: O(n^2) at worst
 
 >>> isPalindrome 3
 True
@@ -305,11 +321,11 @@ False
 
 -}
 isPalindrome :: Int -> Bool
-isPalindrome n = isPalindrome' (show n)
+isPalindrome n = helper (show n)
   where 
-    isPalindrome' [] = True
-    isPalindrome' [_] = True
-    isPalindrome' (x:xs) = (x == last xs) && isPalindrome' (init xs)
+    helper [] = True
+    helper [_] = True
+    helper (x:xs) = (x == last xs) && helper (init xs)
 
 
 {- | Check if integer is prime number
@@ -399,4 +415,15 @@ binToInt xs = sum $ zipWith (*) digits pows
 -}
 hexToInt :: String -> Int
 hexToInt = fst . head . readHex
+
+
+-- taken from McBride-Paterson "Applicative Programming with Effects"
+{- | Transpose matrix (a list of a list)
+>>> transpose [[1,2,3],[4,5,6]]
+[[1,4],[2,5],[3,6]]
+
+-}
+transpose :: [[a]] -> [[a]]
+transpose [] = repeat []
+transpose (xs:xss) = zipWith (:) xs (transpose xss)
 
