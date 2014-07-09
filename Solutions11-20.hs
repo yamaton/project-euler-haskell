@@ -300,7 +300,7 @@ data018 = map ((map read) . words) . lines $ raw
 
 findMax :: [[Int]] -> Int
 findMax triangle = head $ foldr1 f triangle
-  where f xs ys = zipWith3 (\a b c -> a + max b c) xs ys (tail ys)
+  where f xs ys = zipWith3 (\a b c -> a + max b c) xs (tail ys) (init ys)
 
 prob018 :: Int
 prob018 = findMax data018
