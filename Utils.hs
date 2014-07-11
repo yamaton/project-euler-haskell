@@ -209,6 +209,9 @@ integerDigits' = reverse . map (`mod` 10) . takeWhile (> 0) . iterate (`div` 10)
 >>> fromDigits [1,6,1,5,2]
 16152
 
+>>> fromDigits [0,1,2,7]
+127
+
 prop> \n -> (n > 0) ==> n == fromDigits (integerDigits (n :: Int))
 
 -}
@@ -291,6 +294,7 @@ factorInteger n = frequencies $ factor n
 
 
 {- | Find a list of divisors of an integer
+   !!!!!!!! VERY SLOW !!!!!!!!
 
 >>> divisors 24
 [1,2,3,4,6,8,12,24]

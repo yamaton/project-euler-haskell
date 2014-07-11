@@ -13,6 +13,7 @@ import qualified Utils as U
 partition :: Int -> Int -> [a] -> [[a]]
 partition = U.partition
 
+
 -- | Problem 11
 -- [Largest product in a grid](http://projecteuler.net/problem=11)
 -- In the 20 20 grid below, four numbers along a diagonal line have been marked in red.
@@ -298,7 +299,7 @@ data018 = map ((map read) . words) . lines $ raw
     \04 62 98 27 23 09 70 98 73 93 38 53 60 04 23 \n\
     \"
 
-findMax :: [[Int]] -> Int
+findMax  :: [[Int]] -> Int
 findMax triangle = head $ foldr1 f triangle
   where f xs ys = zipWith3 (\a b c -> a + max b c) xs (tail ys) (init ys)
 
