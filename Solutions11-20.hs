@@ -48,9 +48,9 @@ prob011 = maximum [ysHorizontal, ysVertiacal, ysDiagonal, ysAntigonal]
              \04 42 16 73 38 25 39 11 24 94 72 18 08 46 29 32 40 62 76 36 \n\
              \20 69 36 41 72 30 23 88 34 62 99 69 82 67 59 85 74 04 36 16 \n\
              \20 73 35 29 78 31 90 01 74 31 49 71 48 86 81 16 23 57 05 54 \n\
-             \01 70 54 71 83 51 54 69 16 92 33 48 61 43 52 01 89 19 67 48 \n\
-             \"
-        xss = partition 20 20 $ map read $ U.splitOn ' ' s
+             \01 70 54 71 83 51 54 69 16 92 33 48 61 43 52 01 89 19 67 48"
+
+        xss = partition 20 20 $ map read $ words s
         ysHorizontal = maximum . map product . concatMap (partition 4 1) $ xss
         ysVertiacal  = maximum . map product . concatMap (partition 4 1) . transpose $ xss
         ysDiagonal   = maximum . map (product . diagonal) . partitionMatrix (4, 4) (1, 1) $ xss
@@ -65,10 +65,10 @@ triangleNumber :: Int -> Int
 triangleNumber n = n * (n + 1) `div` 2
 
 prob012 :: Int
-prob012 = head . filter ((> 500) . length . U.divisors) . map triangleNumber $ [1..]
+prob012 = head . filter ((> 500) . U.divisorsCount) . map triangleNumber $ [1..]
 
-prob012' :: Int
-prob012' = head [x | i <- [1..], let x = triangleNumber i, length (U.divisors x) > 500]
+-- prob012' :: Int
+-- prob012' = head [x | i <- [1..], let x = triangleNumber i, length (U.divisors x) > 500]
 
 
 
@@ -76,7 +76,7 @@ prob012' = head [x | i <- [1..], let x = triangleNumber i, length (U.divisors x)
 -- [Large sum](http://projecteuler.net/problem=13)
 -- Work out the first ten digits of the sum of the following one-hundred 50-digit numbers.
 prob013data :: [Integer]
-prob013data = map read . U.splitOn ' ' $ prob013raw
+prob013data = map read . words $ prob013raw
 
 prob013 :: Int
 prob013 = read . take 10 . show . sum $ prob013data
@@ -182,8 +182,7 @@ prob013raw = "\
     \77158542502016545090413245809786882778948721859617 \n\
     \72107838435069186155435662884062257473692284509516 \n\
     \20849603980134001723930671666823555245252804609722 \n\
-    \53503534226472524250874054075591789781264330331690 \n\
-    \"
+    \53503534226472524250874054075591789781264330331690"
 
 -- | Problem 14
 -- [Longest Collatz sequence](http://projecteuler.net/problem=14)
@@ -296,8 +295,7 @@ data018 = map ((map read) . words) . lines $ raw
     \70 11 33 28 77 73 17 78 39 68 17 57 \n\
     \91 71 52 38 17 14 91 43 58 50 27 29 48 \n\
     \63 66 04 68 89 53 67 30 73 16 69 87 40 31 \n\
-    \04 62 98 27 23 09 70 98 73 93 38 53 60 04 23 \n\
-    \"
+    \04 62 98 27 23 09 70 98 73 93 38 53 60 04 23 \n"
 
 findMax  :: [[Int]] -> Int
 findMax triangle = head $ foldr1 f triangle
@@ -330,5 +328,5 @@ prob020 = sum . U.integerDigits . product $ [1..100]
 main :: IO ()
 main = do
     [s] <- getArgs
-    let n = read s
+    let n = read s :: Int
     print $ [prob011, prob012, prob013, prob014, prob015, prob016, prob017, prob018, prob019, prob020] !! (n - 11) 

@@ -31,8 +31,9 @@ prob001 = prob001Helper 1000
 -- the Fibonacci sequence whose values do not exceed four million, 
 -- find the sum of the even-valued terms.
 
+-- [Note] U.fibonacciSequence gives [1,1,2,3,5,...]
 prob002 :: Int
-prob002 = sum . filter even . takeWhile (< 4000000) $ U.fibonacciSequence
+prob002 = sum . filter even . takeWhile (< 4000000) . tail $ U.fibonacciSequence
 
 
 

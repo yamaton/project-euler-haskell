@@ -20,7 +20,8 @@ import qualified Data.HashSet as HS
 --              List Utilities
 --------------------------------------------------------------
 
-{- | partition n d xs generates sublist of 
+{- | partition n d xs 
+     generates sublists of length n with offset d
 
 >>> partition 4 2 [1..7]
 [[1,2,3,4],[3,4,5,6]]
@@ -67,7 +68,8 @@ joinList :: [a] -> [[a]] -> [a]
 joinList = intercalate
 
 
-{- | Partial Permutations
+{- | partialPermutations n xs 
+     generates permutaitons of length n
 
 >>> partialPermutations 2 [1..4]
 [[1,2],[2,1],[1,3],[3,1],[1,4],[4,1],[2,3],[3,2],[2,4],[4,2],[3,4],[4,3]]
@@ -77,7 +79,8 @@ partialPermutations :: Int -> [a] -> [[a]]
 partialPermutations n xs = concatMap permutations $ combinations n xs
 
 
-{- | Combinations 
+{- | combinations n xs
+     generates combinations of length n
 
 >>> combinations 2 [1..4]
 [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]
@@ -105,7 +108,7 @@ combinationsWithReplacement :: (Ord a, Hashable a) => Int -> [a] -> [[a]]
 combinationsWithReplacement n = sort . HS.toList . HS.fromList . map sort . replicateM n
 
 
-{- | Equivalent to the tuple command in Mathematica
+{- | Equivalent to Tuple in Mathematica
 
 >>> tuples 2 "abc"
 ["aa","ab","ac","ba","bb","bc","ca","cb","cc"]
@@ -115,7 +118,7 @@ tuples :: Int -> [a] -> [[a]]
 tuples = replicateM
 
 
-{- | Frequency (occurrence) of element
+{- | Frequencies (occurrences) of the element in list
 http://stackoverflow.com/questions/7108559/how-to-find-the-frequency-of-characters-in-a-string-in-haskell
 
 >>> tally "aaaddbcdabbbaf"
@@ -148,6 +151,7 @@ cartesianProduct = foldr (\xs acc -> (:) <$> xs <*> acc) [[]]
 -}
 count :: Eq a => a -> [a] -> Int
 count x = length . filter (== x)
+-- count x = foldr (\y acc -> if y == x then acc + 1 else acc) 0
 
 
 {- | Take Every n elements from a list
@@ -184,11 +188,11 @@ reshapeBy n xs =
 {- | Fibonacci sequence
 
 >>> take 10 $ fibonacciSequence 
-[1,2,3,5,8,13,21,34,55,89]
+[1,1,2,3,5,8,13,21,34,55,89]
 
 -}
-fibonacciSequence :: [Int]
-fibonacciSequence = unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 2)
+fibonacciSequence :: (Integral a) => [a]
+fibonacciSequence = unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 1)
 
 
 {- | Integer to digits
@@ -200,8 +204,8 @@ fibonacciSequence = unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 2)
 integerDigits :: (Show a, Integral a) => a -> [Int]
 integerDigits = map digitToInt . show
 
-integerDigits' :: Integral a => a -> [a]
-integerDigits' = reverse . map (`mod` 10) . takeWhile (> 0) . iterate (`div` 10) 
+-- integerDigits :: (Integral a) => a -> [a]
+-- integerDigits = reverse . map (`mod` 10) . takeWhile (> 0) . iterate (`div` 10)
 
 
 {- | Digits to integer
@@ -231,6 +235,11 @@ sieve n = runSTUArray $ do
           writeArray sieveTF q False
     return sieveTF
 
+
+{- | Sieve of Atkin
+http://en.wikipedia.org/wiki/Sieve_of_Atkin    
+    
+-}
 
 {- | Generate first n primes 
 
@@ -310,6 +319,45 @@ divisors :: Int -> [Int]
 divisors 1 = [1]
 divisors n = sort [product xs | xs <- cartesianProduct factors]
   where factors = [ map (n^) [0..pow] | (n, pow) <- factorInteger n ]
+
+
+{- | Number of divisors of n
+     d(n) in http://en.wikipedia.org/wiki/Table_of_divisors
+
+>>> divisorsCount 72
+12
+
+>>> divisorsCount 378
+16
+
+>>> divisorsCount 256
+9
+
+ -}
+divisorsCount :: Int -> Int
+divisorsCount n = 2 + 2 * (length $ filter (\k -> n `mod` k == 0) [2..m]) - a
+  where
+    m = floor . sqrt . fromIntegral $ n
+    a = if m * m == n then 1 else 0
+
+
+{- | Sum of divisors of n
+
+>>> divisorsSum 72
+195
+
+>>> divisorsSum 378
+960  
+
+>>> divisorsSum 256
+511
+    
+-}
+divisorsSum :: Int -> Int
+divisorsSum n = (1 + n) + (sum . map (\k -> k + n `div` k ) . filter (\k -> n `mod` k == 0) $ [2..p]) - adjuster
+  where
+    p = floor . sqrt . fromIntegral $ n
+    adjuster = if p * p == n then p else 0
 
 
 {- | Check if integer is palindrome: O(n^2) at worst
