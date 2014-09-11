@@ -87,7 +87,7 @@ prob024 = Utils.fromDigits (x !! 1000000)
 -- Find the first term in the Fibonacci sequence to contain 1000 digits.
 
 digitLen :: (Integral a, Show a) => a -> Int
-digitLen = length . Utils.integerDigits 
+digitLen = length . show 
 
 prob025 :: Int
 prob025 = 1 + (length $ takeWhile (\n -> digitLen n < 1000) Utils.fibonacciSequence)
