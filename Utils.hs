@@ -4,17 +4,19 @@ module Utils where
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}  
 
-import Data.Char (intToDigit, digitToInt)
-import Numeric (showIntAtBase, readHex)
-import Data.List (intercalate, sort, permutations, unfoldr, foldl')
+import Data.List (unfoldr, foldl')
 import Control.Applicative ((<$>), (<*>))
 import Control.Monad.State (evalState, get, put)
-import Data.Map (fromListWith, toList)
 import Control.Monad (when, forM_, replicateM)
 import Data.Array.ST (newArray, readArray, writeArray, runSTUArray)
 import Data.Array.Unboxed (UArray, assocs)
 import Data.Hashable (Hashable)
-import qualified Data.HashSet as HS
+import qualified Numeric
+import qualified Data.Char    as Char
+import qualified Data.Ord     as Ord
+import qualified Data.List    as List
+import qualified Data.Map     as Map
+import qualified Data.HashSet as HashSet
 
 --------------------------------------------------------------
 --              List Utilities
@@ -65,7 +67,7 @@ splitOn c s = case dropWhile (== c) s of
 
 -}
 joinList :: [a] -> [[a]] -> [a]
-joinList = intercalate
+joinList = List.intercalate
 
 
 {- | partialPermutations n xs 
@@ -76,7 +78,7 @@ joinList = intercalate
 
 -}
 partialPermutations :: Int -> [a] -> [[a]]
-partialPermutations n xs = concatMap permutations $ combinations n xs
+partialPermutations n xs = concatMap List.permutations $ combinations n xs
 
 
 {- | combinations n xs
@@ -105,7 +107,8 @@ combinations n xs = helper n (length xs) xs
 
 -}
 combinationsWithReplacement :: (Ord a, Hashable a) => Int -> [a] -> [[a]]
-combinationsWithReplacement n = sort . HS.toList . HS.fromList . map sort . replicateM n
+combinationsWithReplacement n = 
+  List.sort . HashSet.toList . HashSet.fromList . map List.sort . replicateM n
 
 
 {- | Equivalent to Tuple in Mathematica
@@ -126,11 +129,21 @@ http://stackoverflow.com/questions/7108559/how-to-find-the-frequency-of-characte
 
 -}
 tally :: Ord a => [a] -> [(a, Int)]
-tally = toList . fromListWith (+) . map (\x -> (x, 1))
+tally = Map.toList . Map.fromListWith (+) . map (\x -> (x, 1))
 
 
 frequencies :: Ord a => [a] -> [(a, Int)]
 frequencies = tally
+
+
+{- | Get the most frequently appearing element from a list
+
+>>> mostFrequent "akakakdkdkbkckdkabkbkbkakfkk"
+'k'
+
+-}
+mostFrequent :: Ord a => [a] -> a
+mostFrequent = fst . List.maximumBy (Ord.comparing snd) . frequencies
 
 
 {- | Cartesian product
@@ -188,7 +201,7 @@ reshapeBy n xs =
 {- | Fibonacci sequence
 
 >>> take 10 $ fibonacciSequence 
-[1,1,2,3,5,8,13,21,34,55,89]
+[1,1,2,3,5,8,13,21,34,55]
 
 -}
 fibonacciSequence :: (Integral a) => [a]
@@ -202,7 +215,7 @@ fibonacciSequence = unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 1)
 
 -}
 integerDigits :: (Show a, Integral a) => a -> [Int]
-integerDigits = map digitToInt . show
+integerDigits = map Char.digitToInt . show
 
 -- integerDigits :: (Integral a) => a -> [a]
 -- integerDigits = reverse . map (`mod` 10) . takeWhile (> 0) . iterate (`div` 10)
@@ -317,7 +330,7 @@ factorInteger n = frequencies $ factor n
 -}
 divisors :: Int -> [Int]
 divisors 1 = [1]
-divisors n = sort [product xs | xs <- cartesianProduct factors]
+divisors n = List.sort [product xs | xs <- cartesianProduct factors]
   where factors = [ map (n^) [0..pow] | (n, pow) <- factorInteger n ]
 
 
@@ -439,7 +452,7 @@ binomial n k
 
 -}
 intToBin :: Int -> String
-intToBin n = showIntAtBase 2 intToDigit n ""
+intToBin n = Numeric.showIntAtBase 2 Char.intToDigit n ""
 
 
 {- | From binary string string to Int
@@ -466,7 +479,7 @@ binToInt xs = sum $ zipWith (*) digits pows
 
 -}
 hexToInt :: String -> Int
-hexToInt = fst . head . readHex
+hexToInt = fst . head . Numeric.readHex
 
 
 -- taken from McBride-Paterson "Applicative Programming with Effects"
@@ -475,6 +488,7 @@ hexToInt = fst . head . readHex
 [[1,4],[2,5],[3,6]]
 
 -}
+-- -> Use List.transpose 
 transpose :: [[a]] -> [[a]]
 transpose [] = repeat []
 transpose (xs:xss) = zipWith (:) xs (transpose xss)
