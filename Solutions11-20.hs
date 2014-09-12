@@ -12,15 +12,17 @@ import qualified Utils
 
 -- | Problem 11
 -- [Largest product in a grid](http://projecteuler.net/problem=11)
--- In the 20 20 grid below, four numbers along a diagonal line have been marked in red.
+-- Find the greatest product of four numbers in straight in the 20x20 grid.
+-- It can be horizontal, vertical, diagonal, and anti-diagonal.
 --
--- [BUG] Type of partitionMatrix is wrong.
 -- >>> partitionMatrix (2,3) (1,2) [[1,2,3,4,5,0],[6,7,8,9,10,0],[11,12,13,14,15,0]]
 -- [[[1,2,3],[6,7,8]],[[3,4,5],[8,9,10]],[[6,7,8],[11,12,13]],[[8,9,10],[13,14,15]]]
 
 partitionMatrix :: (Int, Int) -> (Int, Int) -> [[a]] -> [[[a]]]
 partitionMatrix (nRow, nCol) (dRow, dCol) = 
-    map List.transpose . concatMap (Utils.partition nCol dCol . List.transpose) . Utils.partition nRow dRow
+      map List.transpose 
+    . concatMap (Utils.partition nCol dCol . List.transpose)
+    . Utils.partition nRow dRow
 
 diagonal :: [[a]] -> [a]
 diagonal [(x:_)]     = [x]

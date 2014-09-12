@@ -31,6 +31,7 @@ countCoins amount coins = f amount sortedCoins
       | otherwise = f (x - z) cs + f x zs
 
 
+
 -- | Problem 32
 -- [Pandigital products](http://projecteuler.net/problem=32)
 -- Find the sum of all products whose multiplicand/multiplier/product 
@@ -60,6 +61,7 @@ isPandigitalProduct x y = digits == [1..9]
   where
     digits = List.sort $ concatMap Utils.integerDigits [x, y, x*y]
     
+
 
 -- | Problem 33
 -- [Digit canceling fractions](http://projecteuler.net/problem=33)
@@ -143,7 +145,6 @@ rotations xs = map (\i -> take n . drop i $ zs) [0..(n-1)]
 
 
 
-
 -- | Problem 36
 -- [Double-base palindromes](http://projecteuler.net/problem=36)
 -- Find the sum of all numbers, less than one million, 
@@ -159,8 +160,6 @@ isPalindrome :: (Eq a) => [a] -> Bool
 isPalindrome [] = True
 isPalindrome [_] = True
 isPalindrome (x:xs) = (x == last xs) && isPalindrome (init xs)
-
-
 
 
 
@@ -185,7 +184,6 @@ isTruncatablePrime = all Utils.isPrime . truncates
 truncates :: Int -> [Int]
 truncates = map Utils.fromDigits . tailsAndInitsWithoutBlank . Utils.integerDigits
   where tailsAndInitsWithoutBlank xs = (init $ List.tails xs) ++ (tail $ List.inits xs)
-
 
 
 
@@ -232,7 +230,6 @@ isPandigital n = length xs == 9 && oneToNine == IntSet.fromList xs
 
 
 
-
 -- | Problem 39
 -- [Integer right triangles](http://projecteuler.net/problem=39)
 -- If p is the perimeter of a right angle triangle with integral length sides, 
@@ -245,11 +242,11 @@ isPandigital n = length xs == 9 && oneToNine == IntSet.fromList xs
 prob039 :: Int
 prob039 = Utils.mostFrequent perims
   where 
-    perims = [r | p <- [2..floor (sqrt 500)], 
-                  q <- [1..(p-1)],
-                  odd (p - q),
-                  gcd (p * q) (p + q) == 1,
-                  r <- [2*p*(p+q), 4*p*(p+q)..1000]
+    perims = [r | p <- [2..floor (sqrt 500)]
+             ,    q <- [1..(p-1)]
+             ,    odd (p - q)
+             ,    gcd (p * q) (p + q) == 1
+             ,    r <- [2*p*(p+q), 4*p*(p+q)..1000]
              ]
 
 
