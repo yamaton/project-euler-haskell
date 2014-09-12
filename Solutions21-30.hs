@@ -12,6 +12,7 @@ import qualified Network.Wreq as Wreq
 import qualified Data.Text.Encoding   as Encoding
 import qualified Data.ByteString      as B
 import qualified Data.ByteString.Lazy as BL
+import qualified Data.ByteString.Lazy.Char8 as BLC8
 import           System.Environment (getArgs)
 import qualified Utils as Utils
 
@@ -42,8 +43,7 @@ prob022 = do
 
 -- (concat . toChunks) converts lazy to strict  
 format022 :: BL.ByteString -> [String]
-format022 = List.sort . Utils.splitOn ',' . filter (/= '\"') . 
-            Text.unpack . Encoding.decodeLatin1 . B.concat . BL.toChunks
+format022 = List.sort . Utils.splitOn ',' . filter (/= '\"') . BLC8.unpack
 
 name2int :: String -> Int
 name2int = sum . map alph2int
