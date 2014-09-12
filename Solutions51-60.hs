@@ -68,7 +68,20 @@ data054 = do
 -- | Problem 55
 -- [Lychrel numbers](http://projecteuler.net/problem=55)
 prob055 :: Int
-prob055 = undefined
+prob055 = length $ filter isLychrel [1..9999]
+
+palindromeMap :: Int -> Int
+palindromeMap n = n + (Utils.fromDigits . reverse . Utils.integerDigits) n 
+
+isLychrel :: Int -> Bool
+isLychrel n = helper n 0
+  where 
+    helper :: Int -> Int -> Bool
+    helper _ 50              = True
+    helper p count
+      | Utils.isPalindrome p = False
+      | otherwise            = helper (palindromeMap p) (count + 1)  
+
 
 
 -- | Problem 56
@@ -133,9 +146,7 @@ prob060 = undefined
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
-
-main = data059 >>= print
-
+main = print $ Utils.fromDigits [0,7,9]
 
 
 
