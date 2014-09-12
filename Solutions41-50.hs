@@ -116,7 +116,27 @@ isPandigital n = length xs == 10 && oneToNine == IntSet.fromList xs
 -- [Pentagon numbers](http://projecteuler.net/problem=44)
 
 prob044 :: Int
-prob044 = undefined
+prob044 = head [ pm |  m <- [1..2000], 
+                       j <- [1..1200],
+                       let pm = pentagonal m,
+                       let pj = pentagonal j,
+                       isPentagonal (pm + pj),
+                       isPentagonal (pm + 2 * pj)]
+
+pentagonal :: Int -> Int
+pentagonal n = n * (3*n -1) `div` 2
+
+
+-- | 
+-- >>> isPentagonal 5482660
+-- True
+isPentagonal :: Int -> Bool
+isPentagonal n = n == d
+  where 
+    estimate = floor $ (1 + sqrt (1 + 24 * fromIntegral n)) / 6
+    xs = drop (estimate - 1) $ map pentagonal [1..]
+    d  = head $ dropWhile (< n) xs
+    
 
 
 -- | Problem 45
@@ -224,14 +244,14 @@ prob050 = head [s | len <- [maxLen, maxLen-1 .. 2],
 
 -- Interface
 
--- select :: Int -> IO Int
--- select 42 = prob042
--- select n = return $ [prob041,       0, prob043, prob044, prob045,
---                      prob046, prob047, prob048, prob049, prob050] !! (n - 41)
+select :: Int -> IO Int
+select 42 = prob042
+select n = return $ [prob041,       0, prob043, prob044, prob045,
+                     prob046, prob047, prob048, prob049, prob050] !! (n - 41)
 
 main :: IO ()
--- main = getArgs >>= return . read . head >>= select >>= print
-main = print $ prob043
+main = getArgs >>= return . read . head >>= select >>= print
+
 
 
 
