@@ -39,19 +39,25 @@ partition' n d xs = helper (length xs) xs
 {- | partition n d xs 
      generates sublists of length n with offset d.
      [This nicely handles infinite series xs!]
+        
+    `groupOf n d xs` might be better name for the function,
+     especially because List.partition already exists in Haskell.
 
 >>> partition 4 2 [1..7]
 [[1,2,3,4],[3,4,5,6]]
 
 >>> partition 2 4 [1..7]
 [[1,2],[5,6]]
+
+>>> partition 2 4 [1..6]
+[[1,2],[5,6]]
         
 -}
 partition :: Int -> Int -> [a] -> [[a]]
 partition _ _ [] = []
 partition n d xs
-  | null (drop n xs) = [] 
-  | otherwise        = (take n xs) : partition n d (drop d xs)
+  | length (take n xs) < n = [] 
+  | otherwise              = (take n xs) : partition n d (drop d xs)
 
   
 {- | round robin
