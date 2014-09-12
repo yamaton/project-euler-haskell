@@ -23,6 +23,7 @@ prob051 :: Int
 prob051 = undefined
 
 
+
 -- | Problem 52
 -- [Permuted multiples](http://projecteuler.net/problem=52)
 prob052 :: Int
@@ -34,6 +35,7 @@ isPermutedMultiples multiplyer n = allTheSame xs
 
 allTheSame :: Eq a => [a] -> Bool
 allTheSame xs = and $ zipWith (==) xs (tail xs)
+
 
 
 -- | Problem 53
@@ -93,10 +95,12 @@ digitSum :: Integer -> Int
 digitSum = sum . Utils.integerDigits
 
 
+
 -- | Problem 57
 -- [Square root convergents](http://projecteuler.net/problem=57)
 prob057 :: Int
 prob057 = undefined
+
 
 
 -- | Problem 58
@@ -143,6 +147,7 @@ prob060 = undefined
 -- select 59 = prob059
 -- select n = return $ [prob051, prob052, prob053, 0, prob055,
 --                      prob056, prob057, prob058, 0, prob060] !! (n - 51)
+
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
