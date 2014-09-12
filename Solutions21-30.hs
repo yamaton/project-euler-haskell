@@ -3,14 +3,14 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 
 import           Control.Lens ((^.))
-import           Data.Char (ord)
-import           Data.Text.Encoding as TE
-import qualified Data.List as List
-import qualified Data.Set as S
-import qualified Data.IntSet as IS
-import qualified Data.Text as T
-import qualified Network.Wreq as W
-import qualified Data.ByteString as B
+import qualified Data.List    as List
+import qualified Data.Set     as Set
+import qualified Data.IntSet  as IntSet
+import qualified Data.Text    as Text
+import qualified Data.Char    as Char
+import qualified Network.Wreq as Wreq
+import qualified Data.Text.Encoding   as Encoding
+import qualified Data.ByteString      as B
 import qualified Data.ByteString.Lazy as BL
 import           System.Environment (getArgs)
 import qualified Utils as Utils
@@ -36,16 +36,18 @@ prob021 = sum . filter isAmicable $ [1..10000]
 -- 
 prob022 :: IO Int
 prob022 = do
-   r <- W.get "http://projecteuler.net/project/names.txt"
-   let dat = format022 $ r ^. W.responseBody
+   r <- Wreq.get "https://projecteuler.net/project/resources/p022_names.txt"
+   let dat = format022 $ r ^. Wreq.responseBody
    return $ totalScore dat
 
+-- (concat . toChunks) converts lazy to strict  
 format022 :: BL.ByteString -> [String]
-format022 = List.sort . Utils.splitOn ',' . filter (/= '\"') . T.unpack . TE.decodeLatin1 . B.concat . BL.toChunks
+format022 = List.sort . Utils.splitOn ',' . filter (/= '\"') . 
+            Text.unpack . Encoding.decodeLatin1 . B.concat . BL.toChunks
 
 name2int :: String -> Int
 name2int = sum . map alph2int
-  where alph2int c = ord c - ord 'A' + 1
+  where alph2int c = Char.ord c - Char.ord 'A' + 1
 
 totalScore :: [String] -> Int
 totalScore = sum . zipWith (\i s -> i * name2int s) [1..]
@@ -59,13 +61,13 @@ isAbundant :: Int -> Bool
 isAbundant n = Utils.divisorsSum n > 2 * n
 
 abundantList :: [Int]
-abundantList = filter isAbundant prob023data
+abundantList = filter isAbundant data023
 
-prob023data :: [Int]
-prob023data = [1..28123]
+data023 :: [Int]
+data023 = [1..28123]
 
 prob023 :: Int
-prob023 = IS.foldr (+) 0 $ IS.difference (IS.fromList prob023data) (IS.fromList sumOfTwoAbundants)
+prob023 = IntSet.foldr (+) 0 $ IntSet.difference (IntSet.fromList data023) (IntSet.fromList sumOfTwoAbundants)
     where sumOfTwoAbundants = [k | i <- abundantList, 
                                    j <- abundantList, 
                                    i <= j, 
@@ -145,7 +147,7 @@ prob028 = sum $ (1 : (concatMap stage [1..500]))
 -- Problem 29
 -- [Distinct powers](http://projecteuler.net/problem=29)
 prob029 :: Int
-prob029 = S.size . S.fromList $ [a^b | a <- [2..100], b <- [2..100]]
+prob029 = Set.size . Set.fromList $ [a^b | a <- [2..100], b <- [2..100]]
 
 
 -- Problem 30
@@ -165,10 +167,9 @@ prob030 = sum $ filter (isDigitsPowerSum 5) [2..354294]
 
 -- IO
 select :: Int -> IO Int
-select 21 = return prob021
-select n
-  | n == 22   = prob022
-  | otherwise = return $ [prob023, prob024, prob025, prob026, prob027, prob028, prob029, prob030] !! (n - 23)
+select 22 = prob022
+select n  = return $ [prob021,       0, prob023, prob024, prob025, 
+                      prob026, prob027, prob028, prob029, prob030] !! (n - 23)
 
 
 main :: IO ()
