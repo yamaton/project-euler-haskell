@@ -63,12 +63,12 @@ data011 =  "08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08\n\
 
 
 
--- Problem 12 
+-- | Problem 12 
 -- [Highly divisible triangular number](http://projecteuler.net/problem=12)
 -- What is the value of the first triangle number to have over five hundred divisors?
 --
 -- >>> Utils.divisorsCount 12
--- 2
+-- 6
 triangleNumber :: Int -> Int
 triangleNumber n = n * (n + 1) `div` 2
 
@@ -207,19 +207,19 @@ collatz n
 -- collatzLen 1 = 1
 -- collatzLen n = 1 + collatzLen (collatz n)
 
--- tail-recursive version
+-- tail-recursive accumulator version
 collatzLen :: Int -> Int
-collatzLen n = helper n 1
+collatzLen n = acc n 1
   where 
-    helper 1 len = len
-    helper n len = helper (collatz n) (len + 1)
+    acc 1 len = len
+    acc n len = acc (collatz n) (len + 1)
 
 prob014 :: Int
 prob014 = snd $ maximum [ (collatzLen i, i) | i <- [1..1000000-1] ]
 
 
 
--- Problem 15
+-- | Problem 15
 -- [Lattice paths](http://projecteuler.net/problem=15)
 -- Find the number of paths from the top-left corner to the bottom-right corner of a 20 x 20 grid.
 -- 
@@ -230,14 +230,14 @@ prob015 :: Int
 prob015 = Utils.binomial 40 20
 
 
--- Problem 16
+-- | Problem 16
 -- [Power digit sum](http://projecteuler.net/problem=16)
 -- What is the sum of the digits of the number 2^1000?
 prob016 :: Int
 prob016 = sum . Utils.integerDigits $ 2 ^ 1000
 
 
--- Problem 17
+-- | Problem 17
 -- [Number letter counts](http://projecteuler.net/problem=17)
 -- If all the numbers from 1 to 1000 (one thousand) inclusive were written out in words, how many letters would be used?
 -- NOTE: Do not count spaces or hyphens. For example, 342 (three hundred and forty-two) contains 23 letters and 115 (one hundred and fifteen) contains 20 letters. The use of "and" when writing out numbers is in compliance with British usage.
@@ -297,7 +297,8 @@ prob017 :: Int
 prob017 = sum $ map (countLetters . numberToWord) [1..1000]
 
 
--- Problem 18
+
+-- | Problem 18
 -- [Maximum path sum I](http://projecteuler.net/problem=18)
 -- Find the maximum total from top to bottom of the triangle below:
 
@@ -329,7 +330,7 @@ prob018 = findMax data018
 
 
 
--- Problem 19
+-- | Problem 19
 -- [Counting Sundays](http://projecteuler.net/problem=19)
 -- How many Sundays fell on the first of the month during the twentieth century (1 Jan 1901 to 31 Dec 2000)?
 
@@ -342,7 +343,7 @@ prob019 = length [day | year <- [1901..2000],
 
 
 
--- Problem 20
+-- | Problem 20
 -- [Factorial digit sum](http://projecteuler.net/problem=20)
 -- Find the sum of the digits in the number 100!
 
