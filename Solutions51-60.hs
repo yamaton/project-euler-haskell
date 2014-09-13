@@ -5,6 +5,7 @@
 import           Control.Lens ((^.))
 import           Data.List ((\\))
 import           Data.Ratio (Ratio, (%))
+import           Text.Regex.Posix ((=~))
 import qualified Data.List   as List
 import qualified Data.Char   as Char
 import qualified Data.IntSet as IntSet
@@ -12,6 +13,7 @@ import qualified Data.Maybe  as Maybe
 import qualified Data.Ratio  as Ratio
 import qualified Data.Bits   as Bits
 import qualified Network.Wreq as Wreq
+import qualified Control.Monad as Monad
 import qualified Data.Text.Lazy          as TextLazy
 import qualified Data.Text.Lazy.Encoding as Encoding
 import qualified Data.ByteString.Lazy    as BL
@@ -166,7 +168,16 @@ primeCount = tail $ scanl (\(a, b) xs -> (a + countPrimes xs, b + 4)) (0, 1) xss
 -- | Problem 59
 -- [XOR decryption](http://projecteuler.net/problem=59)
 prob059 :: IO Int
-prob059 = undefined
+prob059 = data059 >>= return . sum . map Char.ord . decrypt
+
+decrypt :: [Int] -> String
+decrypt dat = head [ message | key <- Monad.replicateM 3 ['a'..'z']
+                      ,           let message = applyKey dat key
+                      ,           makeSense message
+                      ]
+
+makeSense :: String -> Bool
+makeSense s = s =~ "[A-Z][a-z,' ]+[\\.!] [A-Z][a-z,' ]+[\\.!]"
 
 data059 :: IO [Int]
 data059 = do
@@ -174,7 +185,9 @@ data059 = do
   let dat = r ^. Wreq.responseBody
   return . read . (\s -> "[" ++ s ++ "]") . BLC8.unpack $ dat
 
-
+applyKey :: [Int] -> String -> String
+applyKey raw key = map Char.chr $ zipWith Bits.xor raw (cycle xs)
+  where xs = map Char.ord key
 
 
 
@@ -196,7 +209,7 @@ prob060 = undefined
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
-main = print =<< prob059
+main = data059 >>= print . decrypt 
 
 
 
