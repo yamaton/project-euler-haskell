@@ -19,7 +19,7 @@ import qualified Data.Text.Lazy.Encoding as Encoding
 import qualified Data.ByteString.Lazy    as BL
 import qualified Data.ByteString.Lazy.Char8 as BLC8
 import           System.Environment (getArgs)
-import qualified Utils as Utils
+import qualified Utils
 
 -- | Problem 51
 -- [Prime digit replacements](http://projecteuler.net/problem=51)
@@ -132,7 +132,7 @@ moreDigitsInNumerator r = (a > b)
 -- 17 % 12
 contFraction :: [Int] -> Rational
 contFraction xs = foldr (\x p -> fromIntegral x + 1 / p) r (init xs)
-  where r = (fromIntegral $ last xs) % 1
+  where r = fromIntegral (last xs) % 1
 
 -- | 
 -- >>> take 5 $ expansionSeries
@@ -168,7 +168,7 @@ primeCount = tail $ scanl (\(a, b) xs -> (a + countPrimes xs, b + 4)) (0, 1) xss
 -- | Problem 59
 -- [XOR decryption](http://projecteuler.net/problem=59)
 prob059 :: IO Int
-prob059 = data059 >>= return . sum . map Char.ord . decrypt
+prob059 = Monad.liftM (sum . map Char.ord . decrypt) data059
 
 decrypt :: [Int] -> String
 decrypt dat = head [ message | key <- Monad.replicateM 3 ['a'..'z']
@@ -195,6 +195,7 @@ applyKey raw key = map Char.chr $ zipWith Bits.xor raw (cycle xs)
 -- [Prime pair sets](http://projecteuler.net/problem=60)
 prob060 :: Int
 prob060 = undefined
+
 
 
 

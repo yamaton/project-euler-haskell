@@ -8,7 +8,7 @@ import qualified Data.IntSet as IntSet
 import qualified Data.Ratio  as Ratio
 import           System.Environment (getArgs)
 import           Data.Ratio (Ratio, (%))
-import qualified Utils as Utils
+import qualified Utils
 
 -- | Problem 31
 -- [Coin sums](http://projecteuler.net/problem=31)
@@ -133,7 +133,7 @@ prob035 :: Int
 prob035 = length . filter isCircularPrime . Utils.primesTo $ 1000000
 
 isCircularPrime :: Int -> Bool
-isCircularPrime n = all Utils.isPrime $ map Utils.fromDigits $ digitRotations
+isCircularPrime n = all Utils.isPrime $ map Utils.fromDigits digitRotations
   where
     digitRotations = rotations $ Utils.integerDigits n 
 
@@ -183,7 +183,7 @@ isTruncatablePrime = all Utils.isPrime . truncates
 truncates :: Int -> [Int]
 truncates = map Utils.fromDigits . tailsAndInitsWithoutBlank . Utils.integerDigits
   where 
-    tailsAndInitsWithoutBlank xs = (init $ List.tails xs) ++ (tail $ List.inits xs)
+    tailsAndInitsWithoutBlank xs = init (List.tails xs) ++ tail (List.inits xs)
 
 
 

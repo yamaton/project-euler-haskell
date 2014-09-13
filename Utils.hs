@@ -1,12 +1,11 @@
-module Utils where
-
 {-# OPTIONS_GHC -Wall                     #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
-{-# OPTIONS_GHC -fno-warn-type-defaults   #-}  
+{-# OPTIONS_GHC -fno-warn-type-defaults   #-}
+  
+module Utils where
 
 import Data.List (unfoldr, foldl')
 import Control.Applicative ((<$>), (<*>))
-import Control.Monad.State (evalState, get, put)
 import Control.Monad (when, forM_, replicateM)
 import Data.Array.ST (newArray, readArray, writeArray, runSTUArray)
 import Data.Array.Unboxed (UArray, assocs)
@@ -57,7 +56,7 @@ partition :: Int -> Int -> [a] -> [[a]]
 partition _ _ [] = []
 partition n d xs
   | length (take n xs) < n = [] 
-  | otherwise              = (take n xs) : partition n d (drop d xs)
+  | otherwise              = take n xs : partition n d (drop d xs)
 
   
 {- | round robin
@@ -123,6 +122,8 @@ combinations n xs = helper n (length xs) xs
       | k < l     = map (z:) (combinations (k-1) zs) ++ combinations k zs
       | k == l    = [ys]
       | otherwise = []
+    -- Never used; just to supress the non-exhaustive pattern warning
+    helper _ _ _  = [] 
 
 
 {- | Equivalent to `combinations_with_relacement` in itertools of Python,
@@ -268,8 +269,8 @@ sieve n = runSTUArray $ do
     sieveTF <- newArray (2, n) True 
     forM_ [2..maxP] $ \p -> do
       isPrime <- readArray sieveTF p
-      when isPrime $ do
-        forM_ [p*p, p*p+p .. n] $ \q -> do
+      when isPrime $
+        forM_ [p*p, p*p+p .. n] $ \q ->
           writeArray sieveTF q False
     return sieveTF
 
@@ -373,7 +374,7 @@ divisors n = List.sort [product xs | xs <- cartesianProduct factors]
 
  -}
 divisorsCount :: Int -> Int
-divisorsCount n = 2 + 2 * (length $ filter (\k -> n `mod` k == 0) [2..m]) - a
+divisorsCount n = 2 + 2 * length (filter (\k -> n `mod` k == 0) [2..m]) - a
   where
     m = floor . sqrt . fromIntegral $ n
     a = if m * m == n then 1 else 0
@@ -516,5 +517,6 @@ hexToInt = fst . head . Numeric.readHex
 -- -> Use List.transpose 
 transpose :: [[a]] -> [[a]]
 transpose [] = repeat []
-transpose (xs:xss) = zipWith (:) xs (transpose xss)
-
+-- transpose (xs:xss) = zipWith (:) xs (transpose xss)
+-- This rewriting is suggested by HLint. Nice!
+transpose xss = foldr (zipWith (:)) (repeat []) xss

@@ -8,10 +8,11 @@ import qualified Data.Set     as Set
 import qualified Data.IntSet  as IntSet
 import qualified Data.Char    as Char
 import qualified Network.Wreq as Wreq
+import qualified Control.Monad as Monad
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.ByteString.Lazy.Char8 as BLC8
 import           System.Environment (getArgs)
-import qualified Utils as Utils
+import qualified Utils
 
 
 -- | Problem 21
@@ -83,6 +84,7 @@ prob023 = IntSet.foldr (+) 0 diff
 -- [Lexicographic permutations](http://projecteuler.net/problem=24)
 
 -- [Note] List.permutations is tad slow.
+--        Should go with an algorithm without permutations
 prob024 :: Int
 prob024 = Utils.fromDigits $ x !! (1000000-1)
     where x = List.sort $ List.permutations [0..9]
@@ -118,7 +120,7 @@ recurringCycle n
   | null xs   = 0
   | otherwise = fromInteger (head xs)
   where p  = toInteger n
-        xs = dropWhile (\i -> (10 ^ i - 1) `mod` p > 0) $ [1..p]
+        xs = dropWhile (\i -> (10 ^ i - 1) `mod` p > 0) [1..p]
 
 prob026 :: Int
 -- drop 3 to remove divisible primes 2, 5
@@ -156,7 +158,7 @@ prob027 = p * q
 
 -- 1001 x 1001 grid corresponds to k = 500
 prob028 :: Int
-prob028 = sum $ 1:(concatMap stage [1..500])
+prob028 = sum $ 1 : concatMap stage [1..500]
   where 
     stage :: Int -> [Int]
     stage k = map (\i -> i*2*k + (2*k - 1)^2) [1,2,3,4]
@@ -196,4 +198,7 @@ select n  = return $ [prob021,       0, prob023, prob024, prob025,
 
 
 main :: IO ()
-main = getArgs >>= return . read . head >>= select >>= print
+-- main = getArgs >>= return . read . head >>= select >>= print
+main = print =<< select =<< Monad.liftM (read . head) getArgs
+
+

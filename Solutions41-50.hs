@@ -7,13 +7,14 @@ import           Data.List ((\\))
 import qualified Data.List   as List
 import qualified Data.Char   as Char
 import qualified Data.IntSet as IntSet
+import qualified Control.Monad as Monad
 import qualified Network.Wreq as Wreq
 -- import qualified Data.Text.Lazy          as TextLazy
 -- import qualified Data.Text.Lazy.Encoding as Encoding
 -- import qualified Data.ByteString.Lazy    as BL
 import qualified Data.ByteString.Lazy.Char8 as BLC8
 import           System.Environment (getArgs)
-import qualified Utils as Utils
+import qualified Utils
 
 -- | Problem 41
 -- [Pandigital prime](http://projecteuler.net/problem=41)
@@ -35,7 +36,7 @@ prob041 = maximum pandigitalPrimes
 -- [Coded triangle numbers](http://projecteuler.net/problem=42)
 
 prob042 :: IO Int
-prob042 = data042 >>= return . length . filter isTriangleNumber . map wordScore
+prob042 = Monad.liftM (length . filter isTriangleNumber . map wordScore) data042
 
 data042 :: IO [String]
 data042 = do
@@ -82,7 +83,7 @@ prob043 = sum . map Utils.fromDigits . filter isPandigital $ out
 padLeft :: a -> Int -> [a] -> [a]
 padLeft e n xs
   | len == n  = xs
-  | otherwise = (replicate (n - len) e) ++ xs
+  | otherwise = replicate (n - len) e ++ xs
   where len = length xs
 
 -- return three-digit multiples of n, in digits form
@@ -103,7 +104,7 @@ connectList      _           []  = []
 connectList      []        paths = paths
 connectList (candids:rest) paths = connectList rest newPaths
   where
-    newPaths = [ (z:p) | (z:zs) <- candids, p <- paths, zs == take 2 p ]
+    newPaths = [ z:p | (z:zs) <- candids, p <- paths, zs == take 2 p ]
 
 
 -- | Prepend the largest complement digit to an int digit list 
@@ -170,7 +171,7 @@ prob046 = head $ dropWhile isGoldBach oddComposites
     oddComposites = filter (not . Utils.isPrime) [3,5..]
 
 isGoldBach :: Int -> Bool
-isGoldBach n = any isSquare $ map (\p -> ((n - p) `div` 2)) ps
+isGoldBach n = any isSquare $ map (\p -> (n - p) `div` 2) ps
   where 
     -- ps is primes sequence from 3 to (n-2)
     ps = drop 1 $ Utils.primesTo (n-2)  

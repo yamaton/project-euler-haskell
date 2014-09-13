@@ -24,10 +24,19 @@ partitionMatrix (nRow, nCol) (dRow, dCol) =
     . concatMap (Utils.partition nCol dCol . List.transpose)
     . Utils.partition nRow dRow
 
+
+-- |
+-- >>> diagonal [[1,2,3],[4,5,6],[7,8,9]]
+-- [1,5,9]
+-- >>> diagonal [[1,2],[4,5],[7,8]]
+-- [1,5]
+-- >>> diagonal [[1,2,3,0],[4,5,6,0],[7,8,9,0]]
+-- [1,5,9]
+
 diagonal :: [[a]] -> [a]
-diagonal [(x:_)]     = [x]
+diagonal [x:_]     = [x]
 diagonal ((x:_):xss) = x : diagonal (map tail xss)
-diagonal _           = []
+diagonal _         = []
 
 prob011 :: Int
 prob011 = maximum [ysHorizontal, ysVertiacal, ysDiagonal, ysAntigonal]
@@ -303,7 +312,7 @@ prob017 = sum $ map (countLetters . numberToWord) [1..1000]
 -- Find the maximum total from top to bottom of the triangle below:
 
 data018 :: [[Int]]
-data018 = map ((map read) . words) . lines $ raw
+data018 = map (map read . words) . lines $ raw
   where raw = "\
     \75\n\
     \95 64\n\
