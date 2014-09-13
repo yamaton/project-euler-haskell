@@ -69,20 +69,33 @@ data054 = do
 
 -- | Problem 55
 -- [Lychrel numbers](http://projecteuler.net/problem=55)
+-- 
 prob055 :: Int
 prob055 = length $ filter isLychrel [1..9999]
 
-palindromeMap :: Int -> Int
-palindromeMap n = n + (Utils.fromDigits . reverse . Utils.integerDigits) n 
+-- | Take sum of its reversed digit  ex) 349 + 943 = 1292
+-- >>> digitRevSum 349
+-- 1292
+-- >>> digitRevSum 4213
+-- 7337
+digitRevSum :: (Integral a, Show a, Read a) => a -> a
+digitRevSum n = n + (read . reverse . show) n 
 
+
+-- | repetitive application of digitRevSum easily exceeds maxBound of Int
+--
+-- >>> isLychrel 349
+-- False
+-- >>> isLychrel 196
+-- True 
 isLychrel :: Int -> Bool
-isLychrel n = helper n 0
+isLychrel n = helper (fromIntegral n) 0
   where 
-    helper :: Int -> Int -> Bool
-    helper _ 50              = True
+    helper :: Integer -> Int -> Bool
+    helper _ 50  = True
     helper p count
       | Utils.isPalindrome p = False
-      | otherwise            = helper (palindromeMap p) (count + 1)  
+      | otherwise            = helper (digitRevSum p) (count+1)  
 
 
 
@@ -151,7 +164,7 @@ prob060 = undefined
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
-main = print $ Utils.fromDigits [0,7,9]
+main = print $ prob055
 
 
 
