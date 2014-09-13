@@ -4,10 +4,12 @@
 
 import           Control.Lens ((^.))
 import           Data.List ((\\))
+import           Data.Ratio (Ratio, (%))
 import qualified Data.List   as List
 import qualified Data.Char   as Char
 import qualified Data.IntSet as IntSet
 import qualified Data.Maybe  as Maybe
+import qualified Data.Ratio  as Ratio
 import qualified Network.Wreq as Wreq
 import qualified Data.Text.Lazy          as TextLazy
 import qualified Data.Text.Lazy.Encoding as Encoding
@@ -81,7 +83,6 @@ prob055 = length $ filter isLychrel [1..9999]
 digitRevSum :: (Integral a, Show a, Read a) => a -> a
 digitRevSum n = n + (read . reverse . show) n 
 
-
 -- | repetitive application of digitRevSum easily exceeds maxBound of Int
 --
 -- >>> isLychrel 349
@@ -112,7 +113,32 @@ digitSum = sum . Utils.integerDigits
 -- | Problem 57
 -- [Square root convergents](http://projecteuler.net/problem=57)
 prob057 :: Int
-prob057 = undefined
+prob057 = length . filter moreDigitsInNumerator . take 1000 $ expansionSeries
+
+moreDigitsInNumerator :: Rational -> Bool
+moreDigitsInNumerator r = (a > b)
+  where
+    [a, b] = map digitLen [Ratio.numerator r, Ratio.denominator r] 
+
+-- | 
+-- contFraction [a1, a2, a3, a4] gives
+-- a1 + 1 / (a2 + 1 / (a3 + 1 / a4))
+--
+-- >>> contFraction [1,2,2]
+-- 17 % 12
+contFraction :: [Int] -> Rational
+contFraction xs = foldr (\x p -> fromIntegral x + 1 / p) r (init xs)
+  where r = (fromIntegral $ last xs) % 1
+
+-- | 
+-- >>> take 5 $ expansionSeries
+-- [3 % 2,7 % 5,17 % 12,41 % 29,99 % 70]
+expansionSeries :: [Rational]
+-- drop 2 to remove [] and [1] from the source
+expansionSeries = map contFraction . drop 2 . List.inits $ (1:repeat 2)
+
+digitLen :: (Integral a, Show a) => a -> Int
+digitLen = length . show
 
 
 
@@ -164,7 +190,7 @@ prob060 = undefined
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
-main = print $ prob055
+main = print $ prob057
 
 
 
