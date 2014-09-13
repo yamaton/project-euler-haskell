@@ -118,7 +118,8 @@ prob057 = length . filter moreDigitsInNumerator . take 1000 $ expansionSeries
 moreDigitsInNumerator :: Rational -> Bool
 moreDigitsInNumerator r = (a > b)
   where
-    [a, b] = map digitLen [Ratio.numerator r, Ratio.denominator r] 
+    [a, b] = map digitLen [Ratio.numerator r, Ratio.denominator r]
+    digitLen = length . show
 
 -- | 
 -- contFraction [a1, a2, a3, a4] gives
@@ -137,25 +138,25 @@ expansionSeries :: [Rational]
 -- drop 2 to remove [] and [1] from the source
 expansionSeries = map contFraction . drop 2 . List.inits $ (1:repeat 2)
 
-digitLen :: (Integral a, Show a) => a -> Int
-digitLen = length . show
-
 
 
 -- | Problem 58
 -- [Spiral primes](http://projecteuler.net/problem=58)
 prob058 :: Int
-prob058 = undefined
-
-
-primeRatio :: Int -> Float
-primeRatio layers = nPrimes / (4 * fromIntegral layers + 1)
+prob058 = 2 * stages + 1
   where
-    xs = concatMap (\i -> [(2*i-1)^2 + 2*i, 
-                           (2*i-1)^2 + 4*i,
-                           (2*i+1)^2 - 2*i,
-                           (2*i+1)^2]      ) [1..layers]
-    nPrimes = fromIntegral . length $ filter Utils.isPrime xs
+    -- 1 is added to the denominator because 1, the very starting number, is missing.
+    moreThanTenPercent (a, b) = 10 * a > b + 1
+    stages = 1 + length (takeWhile moreThanTenPercent primeCount)
+
+primeCount :: [(Int, Int)]
+primeCount = tail $ scanl (\(a, b) xs -> (a + countPrime xs, b + 4)) (0, 0) xss
+  where
+    xss = map (\i -> [(2*i-1)^2 + 2*i, 
+                      (2*i-1)^2 + 4*i,
+                      (2*i+1)^2 - 2*i,
+                      (2*i+1)^2      ] ) [1..]
+    countPrime = length . filter Utils.isPrime
 
 
 
@@ -190,7 +191,7 @@ prob060 = undefined
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
-main = print $ prob057
+main = print $ prob058
 
 
 
