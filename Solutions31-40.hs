@@ -51,7 +51,7 @@ countCoins amount coins = f amount sortedCoins
 -- For x <= y, we have (d(x), d(y)) = (1, 4) or (2, 3).
 
 prob032 :: Int
-prob032 = sum $ List.nub $ set1 ++ set2
+prob032 = sum $ IntSet.toList . IntSet.fromList $ set1 ++ set2
   where
     set1 = [i * j | i <- [1..9],   j <- [1234 .. (9999 `div` i)],        isPandigitalProduct i j]
     set2 = [i * j | i <- [12..99], j <- [123 .. min (9999 `div` i) 999], isPandigitalProduct i j]
@@ -78,13 +78,13 @@ isPandigitalProduct x y = digits == [1..9]
 -- find the value of the denominator.
 
 prob033 :: Int
-prob033 = Ratio.denominator $ product strangeFractions
+prob033 = Ratio.denominator $ product curiousFractions
 
-strangeFractions :: [Ratio Int]
-strangeFractions = [n % d | n <- [10..99], d <- [(n+1)..99], isStrange n d]
+curiousFractions :: [Ratio Int]
+curiousFractions = [n % d | n <- [10..99], d <- [(n+1)..99], isCurious33 n d]
 
-isStrange :: Int -> Int -> Bool
-isStrange numer denom
+isCurious33 :: Int -> Int -> Bool
+isCurious33 numer denom
   | numer > denom                              = False
   | numer < 10 || 99 < numer                   = False
   | denom < 10 || 99 < denom                   = False
@@ -111,13 +111,13 @@ isStrange numer denom
 -- An upper limit is 9 x 9! = 
 
 prob034 :: Int
-prob034 = sum [i | i <- [3..3000000], isCurious i]
+prob034 = sum [i | i <- [3..3000000], isCurious34 i]
 
 factorial :: Int -> Int
 factorial n = product [1..n]
 
-isCurious :: Int -> Bool
-isCurious n = n == factSum
+isCurious34 :: Int -> Bool
+isCurious34 n = n == factSum
   where factSum = sum . map factorial $ Utils.integerDigits n
 
 
@@ -163,7 +163,6 @@ isPalindrome (x:xs) = (x == last xs) && isPalindrome (init xs)
 
 
 
-
 -- | Problem 37
 -- [Truncatable primes](http://projecteuler.net/problem=37)
 -- The number 3797 has an interesting property. Being prime itself, 
@@ -173,7 +172,7 @@ isPalindrome (x:xs) = (x == last xs) && isPalindrome (init xs)
 -- Find the sum of the only eleven primes that are both truncatable
 -- from left to right and right to left.
 --
--- NOTE: 2, 3, 5, and 7 are not considered to be truncatable primes.
+-- NOTE: 2, 3, 5, and 7 are not considered truncatable primes.
 
 prob037 :: Int
 prob037 = sum . filter isTruncatablePrime . drop 4 . Utils.primesTo $ 1000000
@@ -183,7 +182,8 @@ isTruncatablePrime = all Utils.isPrime . truncates
 
 truncates :: Int -> [Int]
 truncates = map Utils.fromDigits . tailsAndInitsWithoutBlank . Utils.integerDigits
-  where tailsAndInitsWithoutBlank xs = (init $ List.tails xs) ++ (tail $ List.inits xs)
+  where 
+    tailsAndInitsWithoutBlank xs = (init $ List.tails xs) ++ (tail $ List.inits xs)
 
 
 
@@ -219,6 +219,10 @@ prob038 = maximum $ concat [lis2, lis3, lis4, lis5]
     lis4 = [z | x <- [10..33],     let z = concatenatedProduct x [1..4], isPandigital z]
     lis5 = [z | x <- [1..9], n <- [5..9], let z = concatenatedProduct x [1..n], isPandigital z]
 
+-- | 
+-- >>> concatenatedProduct 192 [1,2,3]
+-- 192384576
+--
 concatenatedProduct :: Int -> [Int] -> Int
 concatenatedProduct x = read . concatMap show . map (*x)
 
@@ -253,21 +257,26 @@ prob039 = Utils.mostFrequent perims
 
 -- | Problem 40
 -- [Champernowne's constant](http://projecteuler.net/problem=40)
-
+-- 0.123456789101112131415161718192021...
+-- Let d(n) be the n-th decimal place digit. ex) d(10) = 1
+-- Conpute d(1) x d(10) x d(100) x d(1000) x d(10000) x d(100000) x d(1000000)
 prob040 :: Int
 prob040 = product . map (d . (10^)) $ [0..6]
   where
     digits = "0123456789"
-    xs = digits ++ concatMap (\n -> prependToAll (show n) digits) [1..]
-    d n = Char.digitToInt $ xs !! n
+    -- tail to remove the very first zero
+    xs = tail $ digits ++ concatMap (prependToAll digits . show) [1..]
+    d n = Char.digitToInt $ xs !! (n-1)
 
+-- |
+-- >>> prependToAll [5,6,7] [0,1]
+-- [0,1,5,0,1,6,0,1,7]
 prependToAll :: [a] -> [a] -> [a]
-prependToAll xs zs = xs ++ (List.intercalate xs . List.transpose $ [zs])
+prependToAll zs xs = xs ++ (List.intercalate xs . List.transpose $ [zs])
 
 
 
 --- Interface
-
 select :: Int -> IO Int
 select n = return $ [prob031, prob032, prob033, prob034, prob035, 
                      prob036, prob037, prob038, prob039, prob040] !! (n - 31)

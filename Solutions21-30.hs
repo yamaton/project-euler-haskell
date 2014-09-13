@@ -130,9 +130,9 @@ prob026 = snd . maximum . map (\n -> (recurringCycle n, n)) . drop 3 . Utils.pri
 -- [Quadratic primes](http://projecteuler.net/problem=27)
 
 -- Facts:
--- f(0) = b hence b must be a prime number
--- f(1) = 1 + a + b hence a must be an odd number unless b = 2 is chosen[1].
---    [1] When b = 2, f(2) = 6 + 2a is not a prime number hence disregard the case.
+-- f(0) = b             so, b must be prime
+-- f(1) = 1 + a + b     so, a must be an odd number unless b = 2 is chosen[*].
+--   [*] When b = 2, f(2) = 6 + 2a is not a prime number hence disregard the case.
 
 formula027 :: Int -> Int -> Int -> Int
 formula027 a b n = n*n + a*n + b
@@ -176,8 +176,8 @@ prob029 = Set.size . Set.fromList $ [a^b | a <- [2..100], b <- [2..100]]
 -- [Digit fifth powers](http://projecteuler.net/problem=30)
 
 isDigitsPowerSum :: Int -> Int -> Bool
-isDigitsPowerSum r n = n == digitPowerSum
-  where digitPowerSum = sum . map (^ r) $ Utils.integerDigits n
+isDigitsPowerSum r n = n == digitPowerSum r n
+  where digitPowerSum r = sum . map (^ r) . Utils.integerDigits
 
 -- an upper limit of the search is 354294
 -- 5 * 9^5 = 295245
