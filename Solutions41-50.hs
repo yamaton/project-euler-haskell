@@ -8,9 +8,10 @@ import qualified Data.List   as List
 import qualified Data.Char   as Char
 import qualified Data.IntSet as IntSet
 import qualified Network.Wreq as Wreq
-import qualified Data.Text.Lazy          as TextLazy
-import qualified Data.Text.Lazy.Encoding as Encoding
-import qualified Data.ByteString.Lazy    as BL
+-- import qualified Data.Text.Lazy          as TextLazy
+-- import qualified Data.Text.Lazy.Encoding as Encoding
+-- import qualified Data.ByteString.Lazy    as BL
+import qualified Data.ByteString.Lazy.Char8 as BLC8
 import           System.Environment (getArgs)
 import qualified Utils as Utils
 
@@ -24,35 +25,39 @@ import qualified Utils as Utils
 prob041 :: Int
 prob041 = maximum pandigitalPrimes
   where 
-    pandigitalPrimes = [x | n  <- [4..9], 
+    pandigitalPrimes = [x | n <- [4..9], 
                             x <- map Utils.fromDigits . List.permutations $ [1..n],
                             Utils.isPrime x]
+
 
 
 -- | Problem 42
 -- [Coded triangle numbers](http://projecteuler.net/problem=42)
 
 prob042 :: IO Int
-prob042 = data042 >>= return . length . filter isTriangleNumber . map wordToNumber
+prob042 = data042 >>= return . length . filter isTriangleNumber . map wordScore
 
-data042 :: IO [TextLazy.Text]
+data042 :: IO [String]
 data042 = do
     r <- Wreq.get "https://projecteuler.net/project/resources/p042_words.txt"
     return $ format042 $ r ^. Wreq.responseBody
 
-format042 :: BL.ByteString -> [TextLazy.Text]
-format042 = TextLazy.splitOn (TextLazy.pack ",") . 
-            TextLazy.filter (/= '\"') . 
-            Encoding.decodeLatin1
+-- format042 :: BL.ByteString -> [TextLazy.Text]
+-- format042 = TextLazy.splitOn (TextLazy.pack ",")
+--           . TextLazy.filter (/= '\"')
+--           . Encoding.decodeLatin1
+
+format042 :: BLC8.ByteString -> [String]
+format042 = read . BLC8.unpack . flip BLC8.snoc ']' . BLC8.cons '['
   
 isTriangleNumber :: Int -> Bool
 isTriangleNumber n = IntSet.member n tns
   where 
-    -- Assume words have the numbers less than (100*101/2)
+    -- Assume words have numbers less than (100*101/2)
     tns = IntSet.fromList . map (\n -> n * (n+1) `div` 2) $ [1..100]
 
-wordToNumber :: TextLazy.Text -> Int
-wordToNumber = sum . map (\c -> Char.ord c - base) . TextLazy.unpack
+wordScore :: String -> Int
+wordScore = sum . map (\c -> Char.ord c - base)
   where
     -- Assume all words are uppercase
     base = Char.ord 'A' - 1
