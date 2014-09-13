@@ -21,6 +21,7 @@ import qualified Data.ByteString.Lazy.Char8 as BLC8
 import           System.Environment (getArgs)
 import qualified Utils
 
+
 -- | Problem 51
 -- [Prime digit replacements](http://projecteuler.net/problem=51)
 
@@ -61,14 +62,86 @@ pascalTriangle n = take (n+1) $ iterate pascalMap [1]
 
 -- | Problem 54
 -- [Poker hands](http://projecteuler.net/problem=54)
-prob054 :: IO Int
-prob054 = undefined
 
-data054 :: IO [[String]]
+type Hand = [String] -- example: ["6D", "7H", "AH", "7S", "QC"]
+type Rank = Int
+
+prob054 :: IO Int
+prob054 = do 
+    dat <- data054
+    return $ length [1 | (h1, h2) <- dat, poker h1 h2 == "left"]
+
+data054 :: IO [(Hand, Hand)]
 data054 = do
-  r <- Wreq.get "https://projecteuler.net/project/resources/p054_poker.txt"
-  let dat = r ^. Wreq.responseBody
-  return . map words . lines . BLC8.unpack $ dat
+    r <- Wreq.get "https://projecteuler.net/project/resources/p054_poker.txt"
+    let dat = r ^. Wreq.responseBody
+    return . map (splitAt 5 . words) . lines . BLC8.unpack $ dat
+
+
+poker :: Hand -> Hand -> String
+poker hand1 hand2
+  | (not . null) extra = "none"
+  | out == hand1       = "left"
+  | otherwise          = "right"
+    where out:extra = allMax handRank [hand1, hand2]
+
+
+allMax :: (Eq a, Ord b) => (a -> b) -> [a] -> [a]
+allMax rankFunc hands = filter (\h -> rankFunc h == oneMax) hands
+  where oneMax = last . List.sort $ map rankFunc hands
+
+
+handRank :: Hand -> (Rank, [Rank])
+handRank hand
+  | isStraight ranks && isFlush hand  = (8, [maximum ranks])
+  | isKind 4 ranks                    = (7, [kind 4 ranks, kind 1 ranks]) 
+  | isKind 3 ranks && isKind 2 ranks  = (6, [kind 3 ranks, kind 2 ranks])
+  | isFlush hand                      = (5, ranks)
+  | isStraight ranks                  = (4, [maximum ranks])
+  | isKind 3 ranks                    = (3, kind 3 ranks : ranks)
+  | isTwoPair ranks                   = (2, twoPair ranks ++ ranks)
+  | isKind 2 ranks                    = (1, kind 2 ranks : ranks)
+  | otherwise                         = (0, ranks)
+    where ranks = cardRanks hand
+
+
+---- example: [14, 14, 4, 4, 2]
+cardRanks :: Hand -> [Rank]
+cardRanks hand
+  | rank == [14,5,4,3,2] = [5,4,3,2,1]
+  | otherwise            = rank
+    where rank = reverse . List.sort  $ map (Maybe.fromJust . (`List.elemIndex` "--23456789TJQKA") . head) hand
+
+isFlush :: Hand -> Bool
+isFlush hand = length (List.nub suits) == 1
+  where suits = map last hand
+
+isStraight :: [Rank] -> Bool
+isStraight ranks = maximum ranks - minimum ranks == 4 && length (List.nub ranks) == 5 
+
+kind :: Int -> [Rank] -> Rank
+kind n ranks
+  | null outcome = 0
+  | otherwise    = head outcome
+    where outcome = dropWhile (\x -> count x ranks /= n) ranks
+
+twoPair :: [Rank] -> [Rank]
+twoPair ranks
+  | 0 /= highPair && highPair /= lowPair  = [highPair, lowPair]
+  | otherwise                             = []
+    where highPair = kind 2 ranks
+          lowPair  = kind 2 (reverse ranks)
+
+isKind :: Int -> [Rank] -> Bool
+isKind n ranks    = 0 /= kind n ranks
+
+isTwoPair :: [Rank] -> Bool
+isTwoPair ranks = not . null $ twoPair ranks
+
+
+---- utilities
+count :: Int -> [Int] -> Int
+count x xs = length $ filter (== x) xs
 
 
 
@@ -198,7 +271,6 @@ prob060 = undefined
 
 
 
-
 -- Interface
 
 -- select :: Int -> IO Int
@@ -210,7 +282,8 @@ prob060 = undefined
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
-main = data059 >>= print . decrypt 
+--main = data059 >>= print . decrypt 
+main = prob054 >>= print 
 
 
 
