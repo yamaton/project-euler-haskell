@@ -410,7 +410,7 @@ True
 False
 
 -}
-isPalindrome :: Int -> Bool
+isPalindrome :: (Integral a, Show a) => a -> Bool
 isPalindrome n = helper (show n)
   where 
     helper [] = True
