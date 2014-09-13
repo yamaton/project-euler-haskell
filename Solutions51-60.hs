@@ -10,6 +10,7 @@ import qualified Data.Char   as Char
 import qualified Data.IntSet as IntSet
 import qualified Data.Maybe  as Maybe
 import qualified Data.Ratio  as Ratio
+import qualified Data.Bits   as Bits
 import qualified Network.Wreq as Wreq
 import qualified Data.Text.Lazy          as TextLazy
 import qualified Data.Text.Lazy.Encoding as Encoding
@@ -145,18 +146,20 @@ expansionSeries = map contFraction . drop 2 . List.inits $ (1:repeat 2)
 prob058 :: Int
 prob058 = 2 * stages + 1
   where
-    -- 1 is added to the denominator because 1, the very starting number, is missing.
-    moreThanTenPercent (a, b) = 10 * a > b + 1
+    moreThanTenPercent (a, b) = 10 * a > b
     stages = 1 + length (takeWhile moreThanTenPercent primeCount)
 
+-- Count (a) number of diagonals (b) number of primes out of them, for each stage.
+-- And return infinite series of (a, b) for increasing stage. 
+-- Note that the center (number 1) contributes to (0, 1) the initial value to scanl.
 primeCount :: [(Int, Int)]
-primeCount = tail $ scanl (\(a, b) xs -> (a + countPrime xs, b + 4)) (0, 0) xss
+primeCount = tail $ scanl (\(a, b) xs -> (a + countPrimes xs, b + 4)) (0, 1) xss
   where
     xss = map (\i -> [(2*i-1)^2 + 2*i, 
                       (2*i-1)^2 + 4*i,
                       (2*i+1)^2 - 2*i,
                       (2*i+1)^2      ] ) [1..]
-    countPrime = length . filter Utils.isPrime
+    countPrimes = length . filter Utils.isPrime
 
 
 
@@ -169,7 +172,9 @@ data059 :: IO [Int]
 data059 = do
   r <- Wreq.get "https://projecteuler.net/project/resources/p059_cipher.txt"
   let dat = r ^. Wreq.responseBody
-  return . map (read . BLC8.unpack) . BLC8.split ',' $ dat
+  return . read . (\s -> "[" ++ s ++ "]") . BLC8.unpack $ dat
+
+
 
 
 
@@ -191,7 +196,7 @@ prob060 = undefined
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
-main = print $ prob058
+main = print =<< prob059
 
 
 
