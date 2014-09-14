@@ -1,32 +1,62 @@
 {-# OPTIONS_GHC -Wall                     #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
+{-# LANGUAGE BangPatterns #-}
 
 import           Control.Lens ((^.))
-import           Data.List ((\\))
-import           Data.Ratio (Ratio, (%))
+import           Data.Ratio ((%))
 import           Text.Regex.Posix ((=~))
 import qualified Data.List   as List
 import qualified Data.Char   as Char
-import qualified Data.IntSet as IntSet
+--import qualified Data.IntSet as IntSet
 import qualified Data.Maybe  as Maybe
 import qualified Data.Ratio  as Ratio
 import qualified Data.Bits   as Bits
 import qualified Network.Wreq as Wreq
 import qualified Control.Monad as Monad
-import qualified Data.Text.Lazy          as TextLazy
-import qualified Data.Text.Lazy.Encoding as Encoding
-import qualified Data.ByteString.Lazy    as BL
+--import qualified Data.ByteString.Lazy    as BL
 import qualified Data.ByteString.Lazy.Char8 as BLC8
 import           System.Environment (getArgs)
 import qualified Utils
 
 
 -- | Problem 51
--- [Prime digit replacements](http://projecteuler.net/problem=51)
-
+-- [Prime digit replaceAllments](http://projecteuler.net/problem=51)
 prob051 :: Int
-prob051 = undefined
+prob051 = head . wildcardToNums $ searchPrimeDigitRep 7
+
+type Wildcard = String   -- for example "6**71*"
+
+searchPrimeDigitRep :: Int -> Wildcard
+searchPrimeDigitRep n = head [w | digits <- [1..]
+                             ,    stars <- [1..digits-1]
+                             ,    w <- genWildcards digits stars
+                             ,    primesInWildcard w == n
+                             ]
+
+replaceAll :: Eq a => [a] -> a -> a -> [a]
+replaceAll xs from to = map helper xs
+  where helper x = if x == from then to else x
+
+primesInWildcard :: Wildcard -> Int
+primesInWildcard = length . filter Utils.isPrime . wildcardToNums
+
+-- Profiling says `read` takes over 80% of cpu time in problem 51. 
+-- Does it mean it consumes unevaluated thunk at this point?
+wildcardToNums :: Wildcard -> [Int]
+wildcardToNums w = trans ['0' .. '9']
+  where 
+    trans = map read . filter isProperStr . map (replaceAll w '*')
+
+isProperStr :: String -> Bool
+isProperStr ('0':_) = False
+isProperStr s       = (last s) `elem` "*13579"
+
+-- | returns wild cards from number of digits and number of stars
+genWildcards :: Int -> Int -> [Wildcard]
+genWildcards digits stars = filter isProperStr . concatMap Utils.permutations $ xs
+  where 
+    xs = map (++ replicate stars '*') $ Monad.replicateM (digits - stars) "0123456789"
 
 
 
@@ -63,6 +93,7 @@ pascalTriangle n = take (n+1) $ iterate pascalMap [1]
 -- | Problem 54
 -- [Poker hands](http://projecteuler.net/problem=54)
 
+-- This is my Haskell-ported version of Peter Norvig's python code.
 type Hand = [String] -- example: ["6D", "7H", "AH", "7S", "QC"]
 type Rank = Int
 
@@ -77,7 +108,6 @@ data054 = do
     let dat = r ^. Wreq.responseBody
     return . map (splitAt 5 . words) . lines . BLC8.unpack $ dat
 
-
 poker :: Hand -> Hand -> String
 poker hand1 hand2
   | (not . null) extra = "none"
@@ -85,11 +115,9 @@ poker hand1 hand2
   | otherwise          = "right"
     where out:extra = allMax handRank [hand1, hand2]
 
-
 allMax :: (Eq a, Ord b) => (a -> b) -> [a] -> [a]
 allMax rankFunc hands = filter (\h -> rankFunc h == oneMax) hands
   where oneMax = last . List.sort $ map rankFunc hands
-
 
 handRank :: Hand -> (Rank, [Rank])
 handRank hand
@@ -104,8 +132,9 @@ handRank hand
   | otherwise                         = (0, ranks)
     where ranks = cardRanks hand
 
-
----- example: [14, 14, 4, 4, 2]
+-- | 
+-- >>> cardRanks ["6D", "7H", "AH", "7S", "QC"]
+-- [14,12,7,7,6]
 cardRanks :: Hand -> [Rank]
 cardRanks hand
   | rank == [14,5,4,3,2] = [5,4,3,2,1]
@@ -119,12 +148,24 @@ isFlush hand = length (List.nub suits) == 1
 isStraight :: [Rank] -> Bool
 isStraight ranks = maximum ranks - minimum ranks == 4 && length (List.nub ranks) == 5 
 
+-- |
+-- >>> kind 2 [14,14,14,7,7]
+-- 7
+-- >>> kind 3 [10,3,3,3,2]
+-- 3
+-- >>> kind 3 [10,3,3,2,2]
+-- 0
 kind :: Int -> [Rank] -> Rank
 kind n ranks
   | null outcome = 0
   | otherwise    = head outcome
     where outcome = dropWhile (\x -> count x ranks /= n) ranks
 
+-- |
+-- >>> twoPair [10,3,3,2,2]
+-- [3,2]
+-- >>> twoPair [10,3,2,2,2]
+-- []
 twoPair :: [Rank] -> [Rank]
 twoPair ranks
   | 0 /= highPair && highPair /= lowPair  = [highPair, lowPair]
@@ -133,14 +174,12 @@ twoPair ranks
           lowPair  = kind 2 (reverse ranks)
 
 isKind :: Int -> [Rank] -> Bool
-isKind n ranks    = 0 /= kind n ranks
+isKind n ranks = 0 /= kind n ranks
 
 isTwoPair :: [Rank] -> Bool
 isTwoPair ranks = not . null $ twoPair ranks
 
-
----- utilities
-count :: Int -> [Int] -> Int
+count :: Eq a => a -> [a] -> Int
 count x xs = length $ filter (== x) xs
 
 
@@ -201,7 +240,7 @@ moreDigitsInNumerator r = (a > b)
 -- contFraction [a1, a2, a3, a4] gives
 -- a1 + 1 / (a2 + 1 / (a3 + 1 / a4))
 --
--- >>> contFraction [1,2,2]
+-- >>> contFraction [1,2,2,2]
 -- 17 % 12
 contFraction :: [Int] -> Rational
 contFraction xs = foldr (\x p -> fromIntegral x + 1 / p) r (init xs)
@@ -270,20 +309,17 @@ prob060 :: Int
 prob060 = undefined
 
 
-
 -- Interface
 
--- select :: Int -> IO Int
--- select 54 = prob054
--- select 59 = prob059
--- select n = return $ [prob051, prob052, prob053, 0, prob055,
---                      prob056, prob057, prob058, 0, prob060] !! (n - 51)
+select :: Int -> IO Int
+select 54 = prob054
+select 59 = prob059
+select n = return $ [prob051, prob052, prob053, 0, prob055,
+                     prob056, prob057, prob058, 0, prob060] !! (n - 51)
 
 
 main :: IO ()
--- main = getArgs >>= return . read . head >>= select >>= print
+main = getArgs >>= return . read . head >>= select >>= print
 --main = data059 >>= print . decrypt 
-main = prob054 >>= print 
-
 
 
