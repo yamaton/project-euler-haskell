@@ -94,6 +94,21 @@ joinList :: [a] -> [[a]] -> [a]
 joinList = List.intercalate
 
 
+{- | permutations
+
+>>> permutations "abaa"
+["abaa","aaba","aaab","baaa"]
+
+>>> permutations [2,1,1]
+[[2,1,1],[1,2,1],[1,1,2]]
+
+-}
+permutations :: Eq a => [a] -> [[a]]
+permutations [] = [[]]
+permutations xs = [p:ps | p  <- List.nub xs,
+                          ps <- permutations $ List.delete p xs] 
+
+
 {- | partialPermutations n xs 
      generates permutaitons of length n
 
