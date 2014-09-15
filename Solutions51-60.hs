@@ -8,12 +8,13 @@ import           Data.Ratio ((%))
 import           Text.Regex.Posix ((=~))
 import qualified Data.List   as List
 import qualified Data.Char   as Char
---import qualified Data.IntSet as IntSet
+import qualified Data.IntSet as IntSet
 import qualified Data.Maybe  as Maybe
 import qualified Data.Ratio  as Ratio
 import qualified Data.Bits   as Bits
 import qualified Network.Wreq as Wreq
 import qualified Control.Monad as Monad
+
 --import qualified Data.ByteString.Lazy    as BL
 import qualified Data.ByteString.Lazy.Char8 as BLC8
 import           System.Environment (getArgs)
@@ -139,7 +140,8 @@ cardRanks :: Hand -> [Rank]
 cardRanks hand
   | rank == [14,5,4,3,2] = [5,4,3,2,1]
   | otherwise            = rank
-    where rank = reverse . List.sort  $ map (Maybe.fromJust . (`List.elemIndex` "--23456789TJQKA") . head) hand
+    where rank = reverse . List.sort  
+               $ map (Maybe.fromJust . (`List.elemIndex` "--23456789TJQKA") . head) hand
 
 isFlush :: Hand -> Bool
 isFlush hand = length (List.nub suits) == 1
@@ -305,11 +307,86 @@ applyKey raw key = map Char.chr $ zipWith Bits.xor raw (cycle xs)
 
 -- | Problem 60
 -- [Prime pair sets](http://projecteuler.net/problem=60)
+
+-- When two prime numbers a and b give primes when concatenated in both orders,
+-- I take it as an edge connecting two nodes (a,b). Mapping the problem into 
+-- a graph, I look for maximum complete subgraphs (cliques) that have five nodes.	
+
+
+-- | Even slower version
+-- 
+-- prob060' :: Int
+-- prob060' = sum . head . filter (\vs -> length vs == 5) vss
+--   where
+--     maxNodes = 2000
+--     vss = head . dropWhile (\zss -> maximum (map length zss) < 5)
+--                . tail . scanl step [] $ Utils.primes maxNodes
+--     step :: [[Int]] -> Int -> [[Int]]
+--     step cliques n = [ n:vs| vs <- cliques, all (isConnected' n) vs ] ++ cliques ++ [ [n] ]
+--
+-- isConnected' :: Int -> Int -> Bool
+-- isConnected' n1 n2 = all Utils.isPrime [p, q]
+--   where p = concatNums n1 n2
+--         q = concatNums n2 n1
+
+
+type Vertex = Int
+type Vertices = IntSet.IntSet
+type Edge = (Vertex, Vertex)
+type Graph = [Edge]
+
+-- This should be rewritten s.t. the clique is counted as the graph grows
 prob060 :: Int
-prob060 = undefined
+prob060 = minimum [sum (IntSet.toList vs)| vs <- findCliques g, IntSet.size vs == 5]
+  where
+    maxNodes = 1500  -- [FIXME] This parameter is set by trials and errors
+    pairs = map listToTuple $ Utils.combinations 2 (Utils.primes maxNodes)
+    g = filter isConnected pairs
 
+listToTuple :: [a] -> (a, a)
+listToTuple [x, y] = (x, y)
+listToTuple _      = error "bad format"
 
--- Interface
+concatNums :: Int -> Int -> Int
+concatNums x y = Utils.fromDigits $ concatMap Utils.integerDigits [x, y]
+
+isConnected :: (Int, Int) -> Bool
+isConnected (n1, n2) = all Utils.isPrime [p, q]
+  where p = concatNums n1 n2
+        q = concatNums n2 n1
+
+vertices :: Graph -> Vertices
+vertices g = IntSet.fromList $ n1 ++ n2
+  where n1 = map fst g
+        n2 = map snd g
+
+findCliques :: Graph -> [Vertices]
+findCliques graph = bronKerbosch IntSet.empty (vertices graph) IntSet.empty
+  where
+    neighborsOf :: Vertex -> Vertices
+    neighborsOf u = IntSet.fromList vs
+      where vs = [if b == u then a else b | (a, b) <- graph, a == u || b == u]
+
+    pickPivot :: Vertices -> Vertices -> Vertex
+    pickPivot s1 s2 = head $ IntSet.elems s1 ++ IntSet.elems s2
+
+    bronKerbosch :: Vertices -> Vertices -> Vertices -> [Vertices]
+    bronKerbosch r p x
+      | IntSet.null p && IntSet.null x = [r]
+      | otherwise                      = concat $ snd mapAccResult
+      where
+        pivot = pickPivot p x
+        subVertexList = IntSet.elems $ p IntSet.\\ (neighborsOf pivot)
+        mapAccResult = List.mapAccumL step (p, x) subVertexList
+        step (p',x') v' = ((nextP, nextX), nextBron)
+          where
+            nv = neighborsOf v'
+            nextP = IntSet.delete v' p'
+            nextX = IntSet.insert v' x'
+            nextBron = bronKerbosch (IntSet.insert v' r)
+                                    (IntSet.intersection nv p')
+                                    (IntSet.intersection nv x')
+
 
 select :: Int -> IO Int
 select 54 = prob054
@@ -320,6 +397,7 @@ select n = return $ [prob051, prob052, prob053, 0, prob055,
 
 main :: IO ()
 main = getArgs >>= return . read . head >>= select >>= print
---main = data059 >>= print . decrypt 
+-- main = data059 >>= print . decrypt
+-- main = print prob060'
 
 
