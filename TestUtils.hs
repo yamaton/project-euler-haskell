@@ -23,6 +23,12 @@ prop_roundRobin xss =
 
 case_roundRobin1 = 
     roundRobin ["abc", "d", "ef"] @?= "adebfc"
+    
+case_roundRobin2 = 
+    roundRobin ["abc"] @?= "abc"
+
+case_roundRobin3 = 
+    roundRobin ["abc", "d", ""] @?= "adbc"
 
 
 -----------------------------------
@@ -61,8 +67,6 @@ case_combi1 =
 
 case_combiWithRep = 
     combinationsWithReplacement 2 "abc" @?= ["aa","ab","ac","bb","bc","cc"]
-
-
 
 
 
