@@ -18,9 +18,16 @@ import qualified Utils
 -- | Problem 61
 -- [Cyclical figurate numbers](http://projecteuler.net/problem=61)
 
-prob061 :: Int
-prob061 = sum . head . filter (not. null) $ concatMap search061 xsss
+-- prob061 :: Int
+prob061 = sum . head $ concatMap search061 xsss
   where xsss = List.permutations [s3, s4, s5, s6, s7, s8]
+        take4dig = takeWhile (< 10000). dropWhile (< 1000)
+        s3 = take4dig $ scanl1 (+) [1,2..]
+        s4 = take4dig $ scanl1 (+) [1,3..]
+        s5 = take4dig $ scanl1 (+) [1,4..]
+        s6 = take4dig $ scanl1 (+) [1,5..]
+        s7 = take4dig $ scanl1 (+) [1,6..]
+        s8 = take4dig $ scanl1 (+) [1,7..]
 
 -- Return list of cycling, linkabale ints
 search061 :: [[Int]] -> [[Int]]
@@ -30,24 +37,17 @@ search061 xxs = filter isCyclic $ foldr step seeds (init xxs)
     step :: [Int] -> [[Int]] -> [[Int]]
     step ns xss = [ n:xs | n <- ns, xs <- xss, isLinkable n (head xs)]
 
-take4dig = takeWhile (< 10000). dropWhile (< 1000)
-s3 = take4dig $ scanl1 (+) [1,2..]
-s4 = take4dig $ scanl1 (+) [1,3..]
-s5 = take4dig $ scanl1 (+) [1,4..]
-s6 = take4dig $ scanl1 (+) [1,5..]
-s7 = take4dig $ scanl1 (+) [1,6..]
-s8 = take4dig $ scanl1 (+) [1,7..]
-
 isLinkable :: Int -> Int -> Bool
 isLinkable x y = drop 2 digX == take 2 digY
   where [digX, digY] = map Utils.integerDigits [x, y]
 
 isCyclic :: [Int] -> Bool
+isCyclic [] = False
 isCyclic xs = isLinkable (last xs) (head xs)
 
 
 -- | Problem 62
--- [](http://projecteuler.net/problem=62)
+-- [Cubic permutations](http://projecteuler.net/problem=62)
 prob062 :: Int
 prob062 = undefined
 
