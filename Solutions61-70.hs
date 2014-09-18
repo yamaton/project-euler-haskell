@@ -6,6 +6,7 @@ import           Control.Lens ((^.))
 import           Data.List ((\\))
 import qualified Data.List   as List
 import qualified Data.Char   as Char
+import qualified Data.Set as Set
 import qualified Data.IntSet as IntSet
 import qualified Control.Monad as Monad
 import qualified Network.Wreq as Wreq
@@ -31,16 +32,26 @@ prob061 = sum . head $ concatMap search061 xsss
 
 -- Return list of cycling, linkabale ints
 search061 :: [[Int]] -> [[Int]]
-search061 xxs = filter isCyclic $ foldr step seeds (init xxs) 
+search061 xss = filter isCyclic $ foldr step seeds (init xss)
   where
-    seeds = map (:[]) $ last xxs
+    seeds = List.transpose [last xss]
     step :: [Int] -> [[Int]] -> [[Int]]
-    step ns xss = [ n:xs | n <- ns, xs <- xss, isLinkable n (head xs)]
+    step ns yss = [ n:ys | n <- ns, ys <- yss, isLinkable n (head ys)]
 
+-- |
+-- >>> isLinkable 5213 1346
+-- True
+-- >>> isLinkable 1346 5213
+-- False
 isLinkable :: Int -> Int -> Bool
 isLinkable x y = drop 2 digX == take 2 digY
   where [digX, digY] = map Utils.integerDigits [x, y]
 
+-- |
+-- >>> isCyclic [1234, 3456, 5612]
+-- True
+-- >>> isCyclic [1234, 5612]
+-- True
 isCyclic :: [Int] -> Bool
 isCyclic [] = False
 isCyclic xs = isLinkable (last xs) (head xs)
@@ -48,8 +59,32 @@ isCyclic xs = isLinkable (last xs) (head xs)
 
 -- | Problem 62
 -- [Cubic permutations](http://projecteuler.net/problem=62)
+-- Find the smallest cube for which exactly five permutations of its digits are cube.
+
 prob062 :: Int
-prob062 = undefined
+prob062 = head [ minimum (concat xss) | n <- [1..], let xss = findPermsFromCubes 5 n, (not . null) xss ]
+
+-- | Return all cubes of the specified digit length.
+allCubes :: Int -> [Int]
+allCubes n = [ x | a <- [start..end], let x = a^3]
+  where start = ceiling $ 10**((fromIntegral n-1) /3)
+        end   = floor   $ 10**(fromIntegral n /3)
+
+
+-- | Find (exactly) k cubes related by digit permutations among the n ndigit numbers
+-- 
+-- >>> findPermsFromCubes 3 8
+-- [[41063625,56623104,66430125]]
+--
+findPermsFromCubes :: Int -> Int -> [[Int]]
+findPermsFromCubes k n = [[x | x <- xs, x `isPermOf` ds] | ds <- dss ]
+  where
+    xs = allCubes n
+    isPermOf :: Int -> [Int] -> Bool
+    isPermOf p digs = digs == List.sort (Utils.integerDigits p)
+    freqs = Utils.frequencies . map (List.sort. Utils.integerDigits) $ xs
+    dss = [ ds | (ds, count) <- freqs, count == k ]
+
 
 
 -- | Problem 63
@@ -106,8 +141,4 @@ prob070 = undefined
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
-main = print prob061
-
-
-
-
+main = print $ findPermsFromCubes 3 8
