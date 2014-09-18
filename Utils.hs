@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wall                     #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
-  
+
 module Utils where
 
 import Data.List (unfoldr, foldl')
@@ -21,7 +21,7 @@ import qualified Data.HashSet as HashSet
 --              List Utilities
 --------------------------------------------------------------
 
-{- | partition' n d xs 
+{- | partition' n d xs
      generates sublists of length n with offset d.
      [This version cannot handle infinite series xs!]
 
@@ -35,10 +35,10 @@ partition' n d xs = helper (length xs) xs
           | otherwise = take n xs : helper (l-d) (drop d xs)
 
 
-{- | partition n d xs 
+{- | partition n d xs
      generates sublists of length n with offset d.
      [This nicely handles infinite series xs!]
-        
+
     `groupOf n d xs` might be better name for the function,
      especially because List.partition already exists in Haskell.
 
@@ -50,15 +50,15 @@ partition' n d xs = helper (length xs) xs
 
 >>> partition 2 4 [1..6]
 [[1,2],[5,6]]
-        
+
 -}
 partition :: Int -> Int -> [a] -> [[a]]
 partition _ _ [] = []
 partition n d xs
-  | length (take n xs) < n = [] 
+  | length (take n xs) < n = []
   | otherwise              = take n xs : partition n d (drop d xs)
 
-  
+
 {- | round robin
 
 >>> roundRobin ["abc", "d", "ef"]
@@ -71,7 +71,7 @@ roundRobin xs = map head ys ++ roundRobin (map tail ys)
   where ys = filter (not . null) xs
 
 
-{- | Split string with specified char 
+{- | Split string with specified char. [Depricated] Use `split` package.
 
 >>> splitOn ',' "aa,bc,cd,e"
 ["aa","bc","cd","e"]
@@ -106,10 +106,10 @@ joinList = List.intercalate
 permutations :: Eq a => [a] -> [[a]]
 permutations [] = [[]]
 permutations xs = [p:ps | p  <- List.nub xs,
-                          ps <- permutations $ List.delete p xs] 
+                          ps <- permutations $ List.delete p xs]
 
 
-{- | partialPermutations n xs 
+{- | partialPermutations n xs
      generates permutaitons of length n
 
 >>> partialPermutations 2 [1..4]
@@ -130,15 +130,15 @@ partialPermutations n xs = concatMap List.permutations $ combinations n xs
 combinations :: Int -> [a] -> [[a]]
 combinations 0 _ = [[]]
 combinations _ [] = []
-combinations 1 xs = map (:[]) xs 
-combinations n xs = helper n (length xs) xs    
+combinations 1 xs = map (:[]) xs
+combinations n xs = helper n (length xs) xs
   where
-    helper k l ys@(z:zs)        
+    helper k l ys@(z:zs)
       | k < l     = map (z:) (combinations (k-1) zs) ++ combinations k zs
       | k == l    = [ys]
       | otherwise = []
     -- Never used; just to supress the non-exhaustive pattern warning
-    helper _ _ _  = [] 
+    helper _ _ _  = []
 
 
 {- | Equivalent to `combinations_with_relacement` in itertools of Python,
@@ -148,7 +148,7 @@ combinations n xs = helper n (length xs) xs
 
 -}
 combinationsWithReplacement :: (Ord a, Hashable a) => Int -> [a] -> [[a]]
-combinationsWithReplacement n = 
+combinationsWithReplacement n =
   List.sort . HashSet.toList . HashSet.fromList . map List.sort . replicateM n
 
 
@@ -215,10 +215,10 @@ count x = length . filter (== x)
 
 -}
 takeEvery :: Int -> [a] -> [a]
-takeEvery n xs = 
+takeEvery n xs =
   case drop (n - 1) xs of
     []     -> []
-    (y:ys) -> y : takeEvery n ys 
+    (y:ys) -> y : takeEvery n ys
 
 
 {- | reshape list into list of list
@@ -228,7 +228,7 @@ takeEvery n xs =
 
 -}
 reshapeBy :: Int -> [a] -> [[a]]
-reshapeBy n xs = 
+reshapeBy n xs =
   case splitAt n xs of
     ([], _)  -> []
     (ys,zs)  -> ys : reshapeBy n zs
@@ -241,7 +241,7 @@ reshapeBy n xs =
 
 {- | Fibonacci sequence
 
->>> take 10 $ fibonacciSequence 
+>>> take 10 $ fibonacciSequence
 [1,1,2,3,5,8,13,21,34,55]
 
 -}
@@ -281,7 +281,7 @@ fromDigits xs = read $ concatMap show xs
 sieve :: Int -> UArray Int Bool
 sieve n = runSTUArray $ do
     let maxP = floor . sqrt $ fromIntegral n
-    sieveTF <- newArray (2, n) True 
+    sieveTF <- newArray (2, n) True
     forM_ [2..maxP] $ \p -> do
       isPrime <- readArray sieveTF p
       when isPrime $
@@ -291,15 +291,15 @@ sieve n = runSTUArray $ do
 
 
 {- | Sieve of Atkin
-http://en.wikipedia.org/wiki/Sieve_of_Atkin    
-    
+http://en.wikipedia.org/wiki/Sieve_of_Atkin
+
 -}
 
-{- | Generate first n primes 
+{- | Generate first n primes
 
 Rosser's theorem is used to get an upper bound:
 For n-th prime number P(n), for n > 6
-log(n) + log(log(n)) - 1 < P(n)/n < log(n) + log(log(n))  
+log(n) + log(log(n)) - 1 < P(n)/n < log(n) + log(log(n))
 http://en.wikipedia.org/wiki/Prime_number_theorem
 
 >>> primes 10
@@ -310,7 +310,7 @@ primes :: Int -> [Int]
 primes n
   | n < 6     = take n [2, 3, 5, 7, 11]
   | otherwise = take n [i | (i, True) <- assocs $ sieve ub]
-    where 
+    where
       x = fromIntegral n
       ub = floor $ x * (log x + log (log x))
 
@@ -351,7 +351,7 @@ factorInteger n = frequencies $ factor n
     factor :: Int -> [Int]
     factor 1 = []
     factor p = k : factor (p `div` k)
-      where 
+      where
         ds = dropWhile (\q -> p `mod` q /= 0) ps
         k = if null ds then p else head ds
 
@@ -401,11 +401,11 @@ divisorsCount n = 2 + 2 * length (filter (\k -> n `mod` k == 0) [2..m]) - a
 195
 
 >>> divisorsSum 378
-960  
+960
 
 >>> divisorsSum 256
 511
-    
+
 -}
 divisorsSum :: Int -> Int
 divisorsSum n = (1 + n) + (sum . map (\k -> k + n `div` k ) . filter (\k -> n `mod` k == 0) $ [2..p]) - adjuster
@@ -428,7 +428,7 @@ False
 -}
 isPalindrome :: (Integral a, Show a) => a -> Bool
 isPalindrome n = helper (show n)
-  where 
+  where
     helper [] = True
     helper [_] = True
     helper (x:xs) = (x == last xs) && helper (init xs)
@@ -475,7 +475,7 @@ isDivisible p q = mod p q == 0
 
 -}
 binomial :: Integral a => a -> a -> a
-binomial n k 
+binomial n k
   | k < 0     = 0
   | k > n     = 0
   | otherwise = foldl' (\z i -> z * (n-i+1) `div` i) 1 [1..min k (n-k)]
@@ -485,8 +485,8 @@ binomial n k
 --------------------------------------------------------------
 --              Binary and Hexadecimal
 --------------------------------------------------------------
-                
-{- | From integer to binary string  
+
+{- | From integer to binary string
 
 >>> intToBin 100
 "1100100"
@@ -504,7 +504,7 @@ intToBin n = Numeric.showIntAtBase 2 Char.intToDigit n ""
 -}
 binToInt :: String -> Int
 binToInt xs = sum $ zipWith (*) digits pows
-  where 
+  where
     n = length xs
     pows = map (2^) $ reverse [0 .. n - 1]
     digits = map (read . (:[])) xs
@@ -529,7 +529,7 @@ hexToInt = fst . head . Numeric.readHex
 [[1,4],[2,5],[3,6]]
 
 -}
--- -> Use List.transpose 
+-- -> Use List.transpose
 transpose :: [[a]] -> [[a]]
 transpose [] = repeat []
 -- transpose (xs:xss) = zipWith (:) xs (transpose xss)
