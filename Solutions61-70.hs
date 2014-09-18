@@ -89,8 +89,17 @@ findPermsFromCubes k n = [[x | x <- xs, x `isPermOf` ds] | ds <- dss ]
 
 -- | Problem 63
 -- [](http://projecteuler.net/problem=63)
+-- How many n-digit positive integers exist which are also an nth power?
+
+-- 10^(n-1) <= x^n < 10^n 
+-- which gives  ceiling (10^((n-1)/n)) <= x <= 9
+-- This equality also gives the upper bound of n by
+-- n <= 1 / (1 - log10 9) =~= 21.85
+-- So  1 <= n <= 21
+
 prob063 :: Int
-prob063 = undefined
+prob063 = length [x^n | n <- [1..21], let p = fromIntegral n,
+                        x <- [ceiling (10**((p-1)/p)) .. 9]]
 
 -- | Problem 64
 -- [](http://projecteuler.net/problem=64)
@@ -141,4 +150,4 @@ prob070 = undefined
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
-main = print $ findPermsFromCubes 3 8
+main = print prob063
