@@ -20,14 +20,9 @@ import qualified Utils
 
 prob061 :: Int
 prob061 = sum . head $ concatMap search061 xsss
-  where xsss = List.permutations [s3, s4, s5, s6, s7, s8]
+  where xsss = List.permutations yss
         take4dig = takeWhile (< 10000). dropWhile (< 1000)
-        s3 = take4dig $ scanl1 (+) [1,2..]
-        s4 = take4dig $ scanl1 (+) [1,3..]
-        s5 = take4dig $ scanl1 (+) [1,4..]
-        s6 = take4dig $ scanl1 (+) [1,5..]
-        s7 = take4dig $ scanl1 (+) [1,6..]
-        s8 = take4dig $ scanl1 (+) [1,7..]
+        yss = map (\n -> take4dig $ scanl1 (+) [1,n..]) [2,3,4,5,6,7]
 
 -- Return list of cycling, linkabale ints
 search061 :: [[Int]] -> [[Int]]
@@ -216,7 +211,7 @@ findMax triangle = head $ foldr1 f triangle
 
 -- | Problem 68
 -- [Magic 5-gon ring](http://projecteuler.net/problem=68)
--- prob068 :: Int
+prob068 :: Int
 prob068 = maximum . map Utils.fromDigits . filter isValid $ prepareDigits
 
 isValid :: [Int] -> Bool
@@ -229,11 +224,11 @@ prepareDigits = [Utils.roundRobin [x, y, (tail y ++ [head y])] |
     outers = map (6:) $ List.permutations [7..10]
     inners = List.permutations [1..5]
 
+
 -- | Problem 69
 -- [Totient maximum](http://projecteuler.net/problem=69)
 prob069 :: Int
-prob069 = undefined
-
+prob069 = last . takeWhile (< 1000000) . scanl1 (*) $ Utils.primes 100
 
 
 
@@ -257,4 +252,4 @@ main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
 -- main = print $ map period [1..100]
-main = print $ prob068
+main = print $ prob061
