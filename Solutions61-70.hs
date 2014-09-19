@@ -216,12 +216,18 @@ findMax triangle = head $ foldr1 f triangle
 
 -- | Problem 68
 -- [Magic 5-gon ring](http://projecteuler.net/problem=68)
-prob068 :: Int
-prob068 = undefined
+-- prob068 :: Int
+prob068 = maximum . map Utils.fromDigits . filter isValid $ prepareDigits
 
+isValid :: [Int] -> Bool
+isValid = all (\ds -> sum ds == 14) . Utils.partition 3 3
 
-
-
+prepareDigits :: [[Int]]
+prepareDigits = [Utils.roundRobin [x, y, (tail y ++ [head y])] | 
+                    x <- outers, y <- inners]
+  where 
+    outers = map (6:) $ List.permutations [7..10]
+    inners = List.permutations [1..5]
 
 -- | Problem 69
 -- [Totient maximum](http://projecteuler.net/problem=69)
@@ -251,4 +257,4 @@ main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
 -- main = print $ map period [1..100]
-main = prob067 >>= print
+main = print $ prob068
