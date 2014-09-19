@@ -4,7 +4,7 @@
 
 module Utils where
 
-import Data.List (unfoldr, foldl')
+import Data.List (foldl')
 import Control.Applicative ((<$>), (<*>))
 import Control.Monad (when, forM_, replicateM)
 import Data.Array.ST (newArray, readArray, writeArray, runSTUArray)
@@ -246,7 +246,7 @@ reshapeBy n xs =
 
 -}
 fibonacciSequence :: Integral a => [a]
-fibonacciSequence = unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 1)
+fibonacciSequence = List.unfoldr (\(a, b) -> Just (a, (b, a + b))) (1, 1)
 
 
 {- | Integer to digits
@@ -535,3 +535,20 @@ transpose [] = repeat []
 -- transpose (xs:xss) = zipWith (:) xs (transpose xss)
 -- This rewriting is suggested by HLint. Nice!
 transpose xss = foldr (zipWith (:)) (repeat []) xss
+
+
+
+-- | detect cycle 
+-- >>> detectCycle ("abcabcabc" ++  cycle "ppd")
+-- "ppd"
+-- >>> detectCycle ("abcabcabc" ++  cycle "ddc")
+-- "cdd"
+-- >>> detectCycle "acccckkkkkkkkkkkkkk"
+-- ""
+-- >>> detectCycle ("acccckkkkkk" ++ repeat 'k')
+-- "k"
+-- detectCycle :: Eq a => [a] -> [a]
+-- detectCycle = undefined
+
+
+

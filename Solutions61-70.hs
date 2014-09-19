@@ -91,20 +91,64 @@ findPermsFromCubes k n = [[x | x <- xs, x `isPermOf` ds] | ds <- dss ]
 -- [](http://projecteuler.net/problem=63)
 -- How many n-digit positive integers exist which are also an nth power?
 
+-- n-digit integer that is nth power is represented by
 -- 10^(n-1) <= x^n < 10^n 
--- which gives  ceiling (10^((n-1)/n)) <= x <= 9
--- This equality also gives the upper bound of n by
--- n <= 1 / (1 - log10 9) =~= 21.85
--- So  1 <= n <= 21
+-- which gives the lower and upper bound of x
+-- 10^((n-1)/n)) <= x < 10
+-- This equality also gives the upper bound of n
+-- n <= 1 / (1 - log10 9) ~=~ 21.85
 
 prob063 :: Int
 prob063 = length [x^n | n <- [1..21], let p = fromIntegral n,
                         x <- [ceiling (10**((p-1)/p)) .. 9]]
 
+
 -- | Problem 64
 -- [](http://projecteuler.net/problem=64)
+
+-- This is a rough hack and contains lots of problematic coding and approaches.
 prob064 :: Int
-prob064 = undefined
+prob064 = length [n | n <- [1..10000], odd (period n)]
+
+
+-- iterative map (a,b,c) -> (a',b',c') is actuall the iteration of the form  p -> p' where
+--   p = (a √n + b)/c
+
+period :: Int -> Int
+period n = detectPeriod . tail . takeWhile (\(a, b, c) -> c /= 0) $ iterate (stepMod n) (1, 0, 1)
+  where
+    stepMod :: Int -> (Int, Int, Int) -> (Int, Int, Int)
+    stepMod n (a, b, c) = (aNext, bNext, cNext)
+      where 
+        k = floor $ (fromIntegral a * sqrt (fromIntegral n) + fromIntegral b) / fromIntegral c
+        aTemp = a * c
+        bTemp = c * (c * k - b)
+        cTemp = a^2 *n - (b - c*k)^2
+        factor = foldr1 gcd [aTemp, bTemp, cTemp]
+        [aNext, bNext, cNext] = map (`div` factor) [aTemp, bTemp, cTemp]
+    
+    detectPeriod :: (Eq a) => [a] -> Int
+    detectPeriod []     = 0
+    detectPeriod (x:xs) = 1 + length (takeWhile (/= x) xs)
+
+
+
+-- Not used in the problem
+sqrtToContinuedFraction :: Int -> [Int]
+sqrtToContinuedFraction n = List.unfoldr (step n) (1, 0, 1) 
+  where
+    step :: Int -> (Int, Int, Int) -> Maybe (Int, (Int, Int, Int))
+    step n (a, b, c)
+      | c == 0    = Nothing
+      | otherwise = Just (k, (aNext, bNext, cNext))
+      where 
+        k = floor $ (fromIntegral a * sqrt (fromIntegral n) + fromIntegral b) / fromIntegral c
+        aTemp = a * c
+        bTemp = c * (c * k - b)
+        cTemp = a^2 *n - (b - c*k)^2
+        factor = foldr1 gcd [aTemp, bTemp, cTemp]
+        [aNext, bNext, cNext] = map (`div` factor) [aTemp, bTemp, cTemp]
+
 
 
 -- | Problem 65
@@ -150,4 +194,5 @@ prob070 = undefined
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
-main = print prob063
+-- main = print $ map period [1..100]
+main = print $ prob064
