@@ -11,9 +11,7 @@ import qualified Data.IntSet as IntSet
 import qualified Data.Ratio  as Ratio
 import qualified Control.Monad as Monad
 import qualified Network.Wreq as Wreq
-import qualified Data.Text.Lazy          as TextLazy
-import qualified Data.Text.Lazy.Encoding as Encoding
-import qualified Data.ByteString.Lazy    as BL
+import qualified Data.ByteString.Lazy.Char8  as BLC8
 import           System.Environment (getArgs)
 import qualified Utils
 
@@ -134,7 +132,50 @@ period n = detectPeriod . tail . takeWhile (\(a, b, c) -> c /= 0) $ iterate (ste
 
 
 
--- Not used in the problem
+-- | Problem 65
+-- [](http://projecteuler.net/problem=65)
+prob065 :: Int
+prob065 = sum . Utils.integerDigits . Ratio.numerator $ fromContinuedFraction (2:xs)
+  where xs = take 99 $ Utils.roundRobin [repeat 1, [2,4..], repeat 1]
+
+fromContinuedFraction :: [Int] -> Rational
+fromContinuedFraction (n:xs) = fromIntegral n + go xs
+  where
+    go :: [Int] -> Rational
+    go []     = 0
+    go (x:xs) = 1 / (fromIntegral x + go xs)
+
+
+
+-- | Problem 66
+-- [](http://projecteuler.net/problem=66)
+prob066 :: Int
+prob066 = snd $ maximum [(pellsEquation d, d) | d <- [1..1000], isNotSquare d]
+
+isNotSquare :: Int -> Bool
+isNotSquare n = p * p /= n
+  where p = floor . sqrt $ fromIntegral n
+
+
+-- Return (x, y), with the minimum x, for given d satisfying the Pell's equation
+--    x^2 - d * y^2 == 1
+-- 
+-- >>> pellsEquation 5
+-- (9, 4)
+-- >>> pellsEquation 7 
+-- (8, 3)
+--
+pellsEquation :: Int -> (Integer, Integer)
+pellsEquation d = head . filter isGood . map toPair $ convergents d
+  where
+    toPair :: Rational -> (Integer, Integer)
+    toPair r = (Ratio.numerator r, Ratio.denominator r)
+    isGood :: (Integer, Integer) -> Bool
+    isGood (x,y) = x*x - fromIntegral d * y*y == 1
+
+convergents :: Int -> [Rational]
+convergents =  map fromContinuedFraction . tail . List.inits . sqrtToContinuedFraction
+
 sqrtToContinuedFraction :: Int -> [Int]
 sqrtToContinuedFraction n = List.unfoldr (step n) (1, 0, 1) 
   where
@@ -152,30 +193,25 @@ sqrtToContinuedFraction n = List.unfoldr (step n) (1, 0, 1)
 
 
 
--- | Problem 65
--- [](http://projecteuler.net/problem=65)
-prob065 :: Int
-prob065 = sum . Utils.integerDigits . Ratio.numerator $ fromContinuedFraction 2 xs
-  where xs = take 99 $ Utils.roundRobin [repeat 1, [2,4..], repeat 1]
-
-fromContinuedFraction :: Int -> [Int] -> Rational
-fromContinuedFraction n xs = fromIntegral n + go xs
-  where
-    go :: [Int] -> Rational
-    go []     = 0
-    go (x:xs) = 1 / (fromIntegral x + go xs)
-
-
-
--- | Problem 66
--- [](http://projecteuler.net/problem=66)
-prob066 :: Int
-prob066 = undefined
-
 -- | Problem 67
 -- [](http://projecteuler.net/problem=67)
-prob067 :: Int
-prob067 = undefined
+prob067 :: IO Int
+prob067 = fmap findMax data067
+
+data067 :: IO [[Int]]
+data067 = do
+    r <- Wreq.get "https://projecteuler.net/project/resources/p067_triangle.txt"
+    return $ format067 $ r ^. Wreq.responseBody
+
+format067 :: BLC8.ByteString -> [[Int]]
+format067 = map (map read . words) . lines . BLC8.unpack
+
+-- from prob018
+findMax  :: [[Int]] -> Int
+findMax triangle = head $ foldr1 f triangle
+  where f xs ys = zipWith3 (\a b c -> a + max b c) xs (tail ys) (init ys)
+
+
 
 
 -- | Problem 68
@@ -184,10 +220,13 @@ prob068 :: Int
 prob068 = undefined
 
 
+
 -- | Problem 69
 -- [](http://projecteuler.net/problem=69)
 prob069 :: Int
 prob069 = undefined
+
+
 
 -- | Problem 70
 -- [](http://projecteuler.net/problem=70)
@@ -198,11 +237,12 @@ prob070 = undefined
 -- Interface
 
 -- select :: Int -> IO Int
+-- select 67 = prob067
 -- select n = return $ [prob061, prob062, prob063, prob064, prob065,
---                      prob066, prob067, prob068, prob069, prob070] !! (n - 51)
+--                      prob066,       0, prob068, prob069, prob070] !! (n - 61)
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
 -- main = print $ map period [1..100]
-main = print $ prob065
+main = print $ prob066
