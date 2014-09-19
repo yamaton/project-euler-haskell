@@ -18,7 +18,7 @@ import qualified Utils
 -- | Problem 61
 -- [Cyclical figurate numbers](http://projecteuler.net/problem=61)
 
--- prob061 :: Int
+prob061 :: Int
 prob061 = sum . head $ concatMap search061 xsss
   where xsss = List.permutations [s3, s4, s5, s6, s7, s8]
         take4dig = takeWhile (< 10000). dropWhile (< 1000)
@@ -87,7 +87,7 @@ findPermsFromCubes k n = [[x | x <- xs, x `isPermOf` ds] | ds <- dss ]
 
 
 -- | Problem 63
--- [](http://projecteuler.net/problem=63)
+-- [Powerful digit counts](http://projecteuler.net/problem=63)
 -- How many n-digit positive integers exist which are also an nth power?
 
 -- n-digit integer that is nth power is represented by
@@ -103,7 +103,7 @@ prob063 = length [x^n | n <- [1..21], let p = fromIntegral n,
 
 
 -- | Problem 64
--- [](http://projecteuler.net/problem=64)
+-- [Odd period square roots](http://projecteuler.net/problem=64)
 
 -- This is a rough hack and contains lots of problematic coding and approaches.
 prob064 :: Int
@@ -133,7 +133,7 @@ period n = detectPeriod . tail . takeWhile (\(a, b, c) -> c /= 0) $ iterate (ste
 
 
 -- | Problem 65
--- [](http://projecteuler.net/problem=65)
+-- [Convergents of e](http://projecteuler.net/problem=65)
 prob065 :: Int
 prob065 = sum . Utils.integerDigits . Ratio.numerator $ fromContinuedFraction (2:xs)
   where xs = take 99 $ Utils.roundRobin [repeat 1, [2,4..], repeat 1]
@@ -148,7 +148,7 @@ fromContinuedFraction (n:xs) = fromIntegral n + go xs
 
 
 -- | Problem 66
--- [](http://projecteuler.net/problem=66)
+-- [Diophantine equation](http://projecteuler.net/problem=66)
 prob066 :: Int
 prob066 = snd $ maximum [(pellsEquation d, d) | d <- [1..1000], isNotSquare d]
 
@@ -194,7 +194,7 @@ sqrtToContinuedFraction n = List.unfoldr (step n) (1, 0, 1)
 
 
 -- | Problem 67
--- [](http://projecteuler.net/problem=67)
+-- [Maximum path sum II](http://projecteuler.net/problem=67)
 prob067 :: IO Int
 prob067 = fmap findMax data067
 
@@ -215,23 +215,28 @@ findMax triangle = head $ foldr1 f triangle
 
 
 -- | Problem 68
--- [](http://projecteuler.net/problem=68)
+-- [Magic 5-gon ring](http://projecteuler.net/problem=68)
 prob068 :: Int
 prob068 = undefined
 
 
 
+
+
 -- | Problem 69
--- [](http://projecteuler.net/problem=69)
+-- [Totient maximum](http://projecteuler.net/problem=69)
 prob069 :: Int
 prob069 = undefined
 
 
 
+
 -- | Problem 70
--- [](http://projecteuler.net/problem=70)
+-- [Totient permutation](http://projecteuler.net/problem=70)
 prob070 :: Int
 prob070 = undefined
+
+
 
 
 -- Interface
@@ -240,6 +245,7 @@ prob070 = undefined
 -- select 67 = prob067
 -- select n = return $ [prob061, prob062, prob063, prob064, prob065,
 --                      prob066,       0, prob068, prob069, prob070] !! (n - 61)
+
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
