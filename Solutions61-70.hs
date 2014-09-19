@@ -6,8 +6,9 @@ import           Control.Lens ((^.))
 import           Data.List ((\\))
 import qualified Data.List   as List
 import qualified Data.Char   as Char
-import qualified Data.Set as Set
+import qualified Data.Set    as Set
 import qualified Data.IntSet as IntSet
+import qualified Data.Ratio  as Ratio
 import qualified Control.Monad as Monad
 import qualified Network.Wreq as Wreq
 import qualified Data.Text.Lazy          as TextLazy
@@ -108,10 +109,10 @@ prob063 = length [x^n | n <- [1..21], let p = fromIntegral n,
 
 -- This is a rough hack and contains lots of problematic coding and approaches.
 prob064 :: Int
-prob064 = length [n | n <- [1..10000], odd (period n)]
+prob064 = length [1 | n <- [1..10000], odd (period n)]
 
 
--- iterative map (a,b,c) -> (a',b',c') is actuall the iteration of the form  p -> p' where
+-- The iterative map (a,b,c) -> (a',b',c') is actuall the iteration of the form  p -> p' where
 --   p = (a √n + b)/c
 
 period :: Int -> Int
@@ -154,7 +155,16 @@ sqrtToContinuedFraction n = List.unfoldr (step n) (1, 0, 1)
 -- | Problem 65
 -- [](http://projecteuler.net/problem=65)
 prob065 :: Int
-prob065 = undefined
+prob065 = sum . Utils.integerDigits . Ratio.numerator $ fromContinuedFraction 2 xs
+  where xs = take 99 $ Utils.roundRobin [repeat 1, [2,4..], repeat 1]
+
+fromContinuedFraction :: Int -> [Int] -> Rational
+fromContinuedFraction n xs = fromIntegral n + go xs
+  where
+    go :: [Int] -> Rational
+    go []     = 0
+    go (x:xs) = 1 / (fromIntegral x + go xs)
+
 
 
 -- | Problem 66
@@ -195,4 +205,4 @@ main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
 -- main = print $ map period [1..100]
-main = print $ prob064
+main = print $ prob065
