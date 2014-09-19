@@ -245,4 +245,4 @@ main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
 -- main = print $ map period [1..100]
-main = print $ prob066
+main = prob067 >>= print
