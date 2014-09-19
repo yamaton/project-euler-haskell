@@ -234,22 +234,32 @@ prob069 = last . takeWhile (< 1000000) . scanl1 (*) $ Utils.primes 100
 
 -- | Problem 70
 -- [Totient permutation](http://projecteuler.net/problem=70)
+
+-- Prime pair possibly gives the minimum n/φ(n) but not necessary.
+-- Maybe triplet give better result. But following code assume pair give the minimum. 
 prob070 :: Int
-prob070 = undefined
+prob070 = product . snd . minimum $ [ (n Ratio.% phiN, pair) | 
+                                          pair <- pairs, 
+                                          let n = product pair, 
+                                          let phiN = product (map (subtract 1) pair),
+                                          arePerms n phiN ]
+    where
+    pairs = filter (\p -> product p < 10000000) 
+              . Utils.combinations 2 . dropWhile (< 1000) $ Utils.primesTo 10000
+
+arePerms :: Int -> Int -> Bool
+arePerms x y = p == q
+  where [p, q] = map (List.sort . Utils.integerDigits) [x, y]
 
 
 
 
 -- Interface
-
--- select :: Int -> IO Int
--- select 67 = prob067
--- select n = return $ [prob061, prob062, prob063, prob064, prob065,
---                      prob066,       0, prob068, prob069, prob070] !! (n - 61)
+select :: Int -> IO Int
+select 67 = prob067
+select n = return $ [prob061, prob062, prob063, prob064, prob065,
+                     prob066,       0, prob068, prob069, prob070] !! (n - 61)
 
 
 main :: IO ()
--- main = getArgs >>= return . read . head >>= select >>= print
-
--- main = print $ map period [1..100]
-main = print $ prob061
+main = getArgs >>= return . read . head >>= select >>= print
