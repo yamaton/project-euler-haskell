@@ -3,14 +3,13 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 
 import           Control.Lens ((^.))
-import           Data.List ((\\))
-import qualified Data.List   as List
-import qualified Data.Char   as Char
-import qualified Data.Set    as Set
-import qualified Data.IntSet as IntSet
-import qualified Data.Ratio  as Ratio
+import qualified Data.List     as List
+import qualified Data.Char     as Char
+import qualified Data.Set      as Set
+import qualified Data.IntSet   as IntSet
+import qualified Data.Ratio    as Ratio
 import qualified Control.Monad as Monad
-import qualified Network.Wreq as Wreq
+import qualified Network.Wreq   as Wreq
 import qualified Data.ByteString.Lazy.Char8  as BLC8
 import           System.Environment (getArgs)
 import qualified Utils
