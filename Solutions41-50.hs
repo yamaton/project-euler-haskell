@@ -2,31 +2,31 @@
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 
-import           Control.Lens ((^.))
-import           Data.List ((\\))
-import qualified Data.List   as List
-import qualified Data.Char   as Char
-import qualified Data.IntSet as IntSet
-import qualified Control.Monad as Monad
-import qualified Network.Wreq as Wreq
+import           Control.Lens               ((^.))
+import qualified Control.Monad              as Monad
+import qualified Data.Char                  as Char
+import qualified Data.IntSet                as IntSet
+import           Data.List                  ((\\))
+import qualified Data.List                  as List
+import qualified Network.Wreq               as Wreq
 -- import qualified Data.Text.Lazy          as TextLazy
 -- import qualified Data.Text.Lazy.Encoding as Encoding
 -- import qualified Data.ByteString.Lazy    as BL
 import qualified Data.ByteString.Lazy.Char8 as BLC8
-import           System.Environment (getArgs)
+import           System.Environment         (getArgs)
 import qualified Utils
 
 -- | Problem 41
 -- [Pandigital prime](http://projecteuler.net/problem=41)
 -- We shall say that an n-digit number is pandigital if it makes
--- use of all the digits 1 to n exactly once. For example, 
--- 2143 is a 4-digit pandigital and is also prime. 
+-- use of all the digits 1 to n exactly once. For example,
+-- 2143 is a 4-digit pandigital and is also prime.
 -- What is the largest n-digit pandigital prime that exists?
 
 prob041 :: Int
 prob041 = maximum pandigitalPrimes
-  where 
-    pandigitalPrimes = [x | n <- [4..9], 
+  where
+    pandigitalPrimes = [x | n <- [4..9],
                             x <- map Utils.fromDigits . List.permutations $ [1..n],
                             Utils.isPrime x]
 
@@ -50,10 +50,10 @@ data042 = do
 
 format042 :: BLC8.ByteString -> [String]
 format042 = read . BLC8.unpack . flip BLC8.snoc ']' . BLC8.cons '['
-  
+
 isTriangleNumber :: Int -> Bool
 isTriangleNumber n = IntSet.member n tns
-  where 
+  where
     -- Assume words have numbers less than (100*101/2)
     tns = IntSet.fromList . map (\n -> n * (n+1) `div` 2) $ [1..100]
 
@@ -107,7 +107,7 @@ connectList (candids:rest) paths = connectList rest newPaths
     newPaths = [ z:p | (z:zs) <- candids, p <- paths, zs == take 2 p ]
 
 
--- | Prepend the largest complement digit to an int digit list 
+-- | Prepend the largest complement digit to an int digit list
 -- >>> prependComplement [1,3,2,4,6,5,7,7,0]
 -- [9,1,3,2,4,6,5,7,7,0]
 
@@ -126,7 +126,7 @@ isPandigital xs = (length xs == 10) && (oneToNine == IntSet.fromList xs)
 -- [Pentagon numbers](http://projecteuler.net/problem=44)
 
 prob044 :: Int
-prob044 = head [ pm |  m <- [1..2000], 
+prob044 = head [ pm |  m <- [1..2000],
                        j <- [1..1200],
                        let pm = pentagonal m,
                        let pj = pentagonal j,
@@ -136,12 +136,12 @@ prob044 = head [ pm |  m <- [1..2000],
 pentagonal :: Int -> Int
 pentagonal n = n * (3*n -1) `div` 2
 
--- | 
+-- |
 -- >>> isPentagonal 5482660
 -- True
 isPentagonal :: Int -> Bool
 isPentagonal n = (n == d)
-  where 
+  where
     estimate = floor $ (1 + sqrt (1 + 24 * fromIntegral n)) / 6
     xs = drop (estimate - 1) $ map pentagonal [1..]
     d  = head $ dropWhile (< n) xs
@@ -153,7 +153,7 @@ isPentagonal n = (n == d)
 -- Find the lowest triangular number x > 40755 that is also pentagonal and hexagonal.
 prob045 :: Int
 prob045 = head $ IntSet.toList $ foldr1 IntSet.intersection [ts,ps,hs]
-  where 
+  where
     nMax = 100000    -- [FIXME] This choice of parameter requires try and error!
     ts = toIntSet $ scanl1 (+) [1..]
     ps = toIntSet $ scanl1 (+) [1,4..]
@@ -172,13 +172,13 @@ prob046 = head $ dropWhile isGoldBach oddComposites
 
 isGoldBach :: Int -> Bool
 isGoldBach n = any isSquare $ map (\p -> (n - p) `div` 2) ps
-  where 
+  where
     -- ps is primes sequence from 3 to (n-2)
-    ps = drop 1 $ Utils.primesTo (n-2)  
+    ps = drop 1 $ Utils.primesTo (n-2)
 
 isSquare :: Int -> Bool
 isSquare n = x * x == n
-  where nn = fromIntegral n 
+  where nn = fromIntegral n
         x = floor $ sqrt nn
 
 
@@ -191,7 +191,7 @@ prob047 :: Int
 prob047 = conseqNDPS 4
 
 conseqNDPS :: Int -> Int
-conseqNDPS n = head . head . dropWhile (\xs -> replicate n n /= map ndps xs) 
+conseqNDPS n = head . head . dropWhile (\xs -> replicate n n /= map ndps xs)
                     $ Utils.partition n 1 [1..]
 
 -- | ndps (Number of Distinct Prime Factors)
@@ -227,7 +227,7 @@ prob049 = Utils.fromDigits . concatMap Utils.integerDigits $ last troikas
                 ,          inc <- [2,4..(5000 - x `div` 2)]
                 ,          let troika = [x, x+inc, x+2*inc]
                 ,          all Utils.isPrime troika
-                ,          allTheSame $ map (List.sort . Utils.integerDigits) troika 
+                ,          allTheSame $ map (List.sort . Utils.integerDigits) troika
                 ]
 
 allTheSame :: Eq a => [a] -> Bool
@@ -238,13 +238,13 @@ allTheSame xs = and $ zipWith (==) xs (tail xs)
 -- | Problem 50
 -- [Consecutive prime sum](http://projecteuler.net/problem=50)
 -- The longest sum of consecutive primes below one-thousand that adds to a prime,
--- contains 21 terms, and is equal to 953. Which prime, below one-million, 
+-- contains 21 terms, and is equal to 953. Which prime, below one-million,
 -- can be written as the sum of the most consecutive primes?
 prob050 :: Int
 prob050 = head [ s | len <- [maxLen, maxLen-1 .. 2]
                ,     i   <- [0..(maxLen - len)]
                ,     let s = sum $ take len . drop i $ xs
-               ,     Utils.isPrime s 
+               ,     Utils.isPrime s
                ]
   where
     -- The choice of 10000 is little arbitrary ... just a large number

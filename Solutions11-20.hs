@@ -2,11 +2,11 @@
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 
-import qualified Data.List as List
-import qualified Data.Char as Char
-import Data.Time.Calendar (fromGregorian)
-import Data.Time.Calendar.WeekDate (toWeekDate)
-import System.Environment (getArgs)
+import qualified Data.Char                   as Char
+import qualified Data.List                   as List
+import           Data.Time.Calendar          (fromGregorian)
+import           Data.Time.Calendar.WeekDate (toWeekDate)
+import           System.Environment          (getArgs)
 import qualified Utils
 
 
@@ -19,8 +19,8 @@ import qualified Utils
 -- [[[1,2,3],[6,7,8]],[[3,4,5],[8,9,10]],[[6,7,8],[11,12,13]],[[8,9,10],[13,14,15]]]
 
 partitionMatrix :: (Int, Int) -> (Int, Int) -> [[a]] -> [[[a]]]
-partitionMatrix (nRow, nCol) (dRow, dCol) = 
-      map List.transpose 
+partitionMatrix (nRow, nCol) (dRow, dCol) =
+      map List.transpose
     . concatMap (Utils.partition nCol dCol . List.transpose)
     . Utils.partition nRow dRow
 
@@ -72,7 +72,7 @@ data011 =  "08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08\n\
 
 
 
--- | Problem 12 
+-- | Problem 12
 -- [Highly divisible triangular number](http://projecteuler.net/problem=12)
 -- What is the value of the first triangle number to have over five hundred divisors?
 --
@@ -219,7 +219,7 @@ collatz n
 -- tail-recursive accumulator version
 collatzLen :: Int -> Int
 collatzLen n = acc n 1
-  where 
+  where
     acc 1 len = len
     acc n len = acc (collatz n) (len + 1)
 
@@ -231,7 +231,7 @@ prob014 = snd $ maximum [ (collatzLen i, i) | i <- [1..1000000-1] ]
 -- | Problem 15
 -- [Lattice paths](http://projecteuler.net/problem=15)
 -- Find the number of paths from the top-left corner to the bottom-right corner of a 20 x 20 grid.
--- 
+--
 -- >>> Utils.binomial 5 2
 -- 10
 
@@ -344,11 +344,11 @@ prob018 = findMax data018
 -- How many Sundays fell on the first of the month during the twentieth century (1 Jan 1901 to 31 Dec 2000)?
 
 prob019 :: Int
-prob019 = length [day | year <- [1901..2000], 
-                        month <- [1..12], 
-                        let day = fromGregorian year month 1, 
-                        let (_, _, weekday) = toWeekDate day, 
-                        weekday == 7] 
+prob019 = length [day | year <- [1901..2000],
+                        month <- [1..12],
+                        let day = fromGregorian year month 1,
+                        let (_, _, weekday) = toWeekDate day,
+                        weekday == 7]
 
 
 
@@ -365,4 +365,4 @@ main :: IO ()
 main = do
     [s] <- getArgs
     let n = read s :: Int
-    print $ [prob011, prob012, prob013, prob014, prob015, prob016, prob017, prob018, prob019, prob020] !! (n - 11) 
+    print $ [prob011, prob012, prob013, prob014, prob015, prob016, prob017, prob018, prob019, prob020] !! (n - 11)

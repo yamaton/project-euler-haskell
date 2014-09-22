@@ -2,12 +2,12 @@
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 
-import qualified Data.List   as List
-import qualified Data.Char   as Char
-import qualified Data.IntSet as IntSet
-import qualified Data.Ratio  as Ratio
+import qualified Data.Char          as Char
+import qualified Data.IntSet        as IntSet
+import qualified Data.List          as List
+import           Data.Ratio         (Ratio, (%))
+import qualified Data.Ratio         as Ratio
 import           System.Environment (getArgs)
-import           Data.Ratio (Ratio, (%))
 import qualified Utils
 
 -- | Problem 31
@@ -34,7 +34,7 @@ countCoins amount coins = f amount sortedCoins
 
 -- | Problem 32
 -- [Pandigital products](http://projecteuler.net/problem=32)
--- Find the sum of all products whose multiplicand/multiplier/product 
+-- Find the sum of all products whose multiplicand/multiplier/product
 -- identity can be written as a 1 through 9 pandigital.
 -- 39 × 186 = 7254 is an example.
 
@@ -60,13 +60,13 @@ isPandigitalProduct :: Int -> Int -> Bool
 isPandigitalProduct x y = digits == [1..9]
   where
     digits = List.sort $ concatMap Utils.integerDigits [x, y, x*y]
-    
+
 
 
 -- | Problem 33
 -- [Digit canceling fractions](http://projecteuler.net/problem=33)
--- The fraction 49/98 is a curious fraction, as an inexperienced mathematician 
--- in attempting to simplify it may incorrectly believe that 49/98=4/8, 
+-- The fraction 49/98 is a curious fraction, as an inexperienced mathematician
+-- in attempting to simplify it may incorrectly believe that 49/98=4/8,
 -- which is correct, is obtained by cancelling the 9s.
 --
 -- We shall consider fractions like, 30/50=3/5, to be trivial examples.
@@ -96,7 +96,7 @@ isCurious33 numer denom
     canceling = numerDigits `List.intersect` denomDigits
     -- For example canceling is [4, 5] if (numer, denom) = (45, 54)
     -- -> always cancel one element anyway
-    c = head canceling  
+    c = head canceling
     [x] = List.delete c numerDigits
     [y] = List.delete c denomDigits
 
@@ -108,7 +108,7 @@ isCurious33 numer denom
 -- Find the sum of all numbers which are equal to the sum of the factorial of their digits.
 -- Note: as 1! = 1 and 2! = 2 are not sums they are not included.
 
--- An upper limit is 9 x 9! = 
+-- An upper limit is 9 x 9! =
 
 prob034 :: Int
 prob034 = sum [i | i <- [3..3000000], isCurious34 i]
@@ -125,7 +125,7 @@ isCurious34 n = n == factSum
 -- | Problem 35
 -- [Circular primes](http://projecteuler.net/problem=35)
 -- The number, 197, is called a circular prime because all rotations of the digits:
--- 197, 971, and 719, are themselves prime. 
+-- 197, 971, and 719, are themselves prime.
 -- There are thirteen such primes below 100: 2, 3, 5, 7, 11, 13, 17, 31, 37, 71, 73, 79, and 97.
 -- How many circular primes are there below one million?
 
@@ -135,11 +135,11 @@ prob035 = length . filter isCircularPrime . Utils.primesTo $ 1000000
 isCircularPrime :: Int -> Bool
 isCircularPrime n = all Utils.isPrime $ map Utils.fromDigits digitRotations
   where
-    digitRotations = rotations $ Utils.integerDigits n 
+    digitRotations = rotations $ Utils.integerDigits n
 
 rotations :: [a] -> [[a]]
 rotations xs = map (\i -> take n . drop i $ zs) [0..(n-1)]
-  where 
+  where
     n = length xs
     zs = cycle xs
 
@@ -147,12 +147,12 @@ rotations xs = map (\i -> take n . drop i $ zs) [0..(n-1)]
 
 -- | Problem 36
 -- [Double-base palindromes](http://projecteuler.net/problem=36)
--- Find the sum of all numbers, less than one million, 
+-- Find the sum of all numbers, less than one million,
 -- which are palindromic in base 10 and base 2.
 
 prob036 :: Int
 prob036 = sum . filter isDoublePalindrome $ [1..1000000]
-  
+
 isDoublePalindrome :: Int -> Bool
 isDoublePalindrome n = isPalindrome (show n) && isPalindrome (Utils.intToBin n)
 
@@ -165,7 +165,7 @@ isPalindrome (x:xs) = (x == last xs) && isPalindrome (init xs)
 
 -- | Problem 37
 -- [Truncatable primes](http://projecteuler.net/problem=37)
--- The number 3797 has an interesting property. Being prime itself, 
+-- The number 3797 has an interesting property. Being prime itself,
 -- it is possible to continuously remove digits from left to right,
 -- and remain prime at each stage: 3797, 797, 97, and 7. Similarly
 -- we can work from right to left: 3797, 379, 37, and 3.
@@ -182,7 +182,7 @@ isTruncatablePrime = all Utils.isPrime . truncates
 
 truncates :: Int -> [Int]
 truncates = map Utils.fromDigits . tailsAndInitsWithoutBlank . Utils.integerDigits
-  where 
+  where
     tailsAndInitsWithoutBlank xs = init (List.tails xs) ++ tail (List.inits xs)
 
 
@@ -190,11 +190,11 @@ truncates = map Utils.fromDigits . tailsAndInitsWithoutBlank . Utils.integerDigi
 -- | Problem 38
 -- [Pandigital multiples](http://projecteuler.net/problem=38)
 -- Take the number 192 and multiply it by each of 1, 2, and 3:
--- 
+--
 -- 192 × 1 = 192
 -- 192 × 2 = 384
 -- 192 × 3 = 576
--- 
+--
 -- By concatenating each product we get the 1 to 9 pandigital, 192384576.
 -- We will call 192384576 the concatenated product of 192 and (1,2,3)
 --
@@ -219,7 +219,7 @@ prob038 = maximum $ concat [lis2, lis3, lis4, lis5]
     lis4 = [z | x <- [10..33],     let z = concatenatedProduct x [1..4], isPandigital z]
     lis5 = [z | x <- [1..9], n <- [5..9], let z = concatenatedProduct x [1..n], isPandigital z]
 
--- | 
+-- |
 -- >>> concatenatedProduct 192 [1,2,3]
 -- 192384576
 --
@@ -228,7 +228,7 @@ concatenatedProduct x = read . concatMap show . map (*x)
 
 isPandigital :: Int -> Bool
 isPandigital n = length xs == 9 && oneToNine == IntSet.fromList xs
-  where 
+  where
     oneToNine = IntSet.fromList [1..9]
     xs = Utils.integerDigits n
 
@@ -236,16 +236,16 @@ isPandigital n = length xs == 9 && oneToNine == IntSet.fromList xs
 
 -- | Problem 39
 -- [Integer right triangles](http://projecteuler.net/problem=39)
--- If p is the perimeter of a right angle triangle with integral length sides, 
+-- If p is the perimeter of a right angle triangle with integral length sides,
 -- {a,b,c}, there are exactly three solutions for p = 120.
--- 
+--
 -- {20,48,52}, {24,45,51}, {30,40,50}
--- 
+--
 -- For which value of p ≤ 1000, is the number of solutions maximised?
 
 prob039 :: Int
 prob039 = Utils.mostFrequent perims
-  where 
+  where
     perims = [r | p <- [2..floor (sqrt 500)]
              ,    q <- [1..(p-1)]
              ,    odd (p - q)
@@ -278,7 +278,7 @@ prependToAll zs xs = xs ++ (List.intercalate xs . List.transpose $ [zs])
 
 --- Interface
 select :: Int -> IO Int
-select n = return $ [prob031, prob032, prob033, prob034, prob035, 
+select n = return $ [prob031, prob032, prob033, prob034, prob035,
                      prob036, prob037, prob038, prob039, prob040] !! (n - 31)
 
 

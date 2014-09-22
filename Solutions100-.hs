@@ -14,6 +14,31 @@ import           System.Environment (getArgs)
 import qualified Utils
 
 
+-- Problem 127
+--
+prob127 :: Int
+prob127 = sum [c | c <- [3..9999]
+              ,    2 * radical c < c        -- truncate unnecessary computations
+              ,    a <- [1..lessThanHalf c] -- to ensure a < b = c - a
+              ,    let b = c - a            -- b such that a + b = c
+              ,    foldr1 gcd [a,b,c] == 1  -- a b c are coprime.
+              ,    prodRadical a b c < c    -- rad(a b c) < c
+              ]
+  where
+    lessThanHalf x
+      | even x    = xHalf - 1
+      | otherwise = xHalf
+      where xHalf = x `div` 2
+
+radical :: Int -> Int
+radical = product . map fst . Utils.factorInteger
+
+-- | rad (a b c) = rad(a) rad(b) rad(c) when (a,b,c) are coprime
+prodRadical :: Int -> Int -> Int -> Int
+prodRadical a b c = product $ map radical [a, b, c]
+
+
+
 
 -- Problem 129
 -- [Repunit divisibility](https://projecteuler.net/problem=129)
@@ -86,5 +111,5 @@ multOfFact n p = sum . takeWhile (> 0) $ map (\i -> n `div` p^i) [1..]
 
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
-main = print prob429
+main = print prob127
 

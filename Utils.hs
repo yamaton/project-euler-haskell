@@ -4,18 +4,19 @@
 
 module Utils where
 
-import Data.List (foldl')
-import Control.Applicative ((<$>), (<*>))
-import Control.Monad (when, forM_, replicateM)
-import Data.Array.ST (newArray, readArray, writeArray, runSTUArray)
-import Data.Array.Unboxed (UArray, assocs)
-import Data.Hashable (Hashable)
+import           Control.Applicative ((<$>), (<*>))
+import           Control.Monad       (forM_, replicateM, when)
+import           Data.Array.ST       (newArray, readArray, runSTUArray,
+                                      writeArray)
+import           Data.Array.Unboxed  (UArray, assocs)
+import qualified Data.Char           as Char
+import           Data.Hashable       (Hashable)
+import qualified Data.HashSet        as HashSet
+import           Data.List           (foldl')
+import qualified Data.List           as List
+import qualified Data.Map            as Map
+import qualified Data.Ord            as Ord
 import qualified Numeric
-import qualified Data.Char    as Char
-import qualified Data.Ord     as Ord
-import qualified Data.List    as List
-import qualified Data.Map     as Map
-import qualified Data.HashSet as HashSet
 
 --------------------------------------------------------------
 --              List Utilities
@@ -538,7 +539,7 @@ transpose xss = foldr (zipWith (:)) (repeat []) xss
 
 
 
--- | detect cycle 
+-- | detect cycle
 -- >>> detectCycle ("abcabcabc" ++  cycle "ppd")
 -- "ppd"
 -- >>> detectCycle ("abcabcabc" ++  cycle "ddc")

@@ -3,21 +3,21 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 {-# LANGUAGE BangPatterns #-}
 
-import           Control.Lens ((^.))
-import           Data.Ratio ((%))
-import           Text.Regex.Posix ((=~))
-import qualified Data.List   as List
-import qualified Data.Char   as Char
-import qualified Data.IntSet as IntSet
-import qualified Data.Maybe  as Maybe
-import qualified Data.Ratio  as Ratio
-import qualified Data.Bits   as Bits
-import qualified Network.Wreq as Wreq
-import qualified Control.Monad as Monad
+import           Control.Lens               ((^.))
+import qualified Control.Monad              as Monad
+import qualified Data.Bits                  as Bits
+import qualified Data.Char                  as Char
+import qualified Data.IntSet                as IntSet
+import qualified Data.List                  as List
+import qualified Data.Maybe                 as Maybe
+import           Data.Ratio                 ((%))
+import qualified Data.Ratio                 as Ratio
+import qualified Network.Wreq               as Wreq
+import           Text.Regex.Posix           ((=~))
 
 --import qualified Data.ByteString.Lazy    as BL
 import qualified Data.ByteString.Lazy.Char8 as BLC8
-import           System.Environment (getArgs)
+import           System.Environment         (getArgs)
 import qualified Utils
 
 
@@ -42,11 +42,11 @@ replaceAll xs from to = map helper xs
 primesInWildcard :: Wildcard -> Int
 primesInWildcard = length . filter Utils.isPrime . wildcardToNums
 
--- Profiling says `read` takes over 80% of cpu time in problem 51. 
+-- Profiling says `read` takes over 80% of cpu time in problem 51.
 -- Does it mean it consumes unevaluated thunk at this point?
 wildcardToNums :: Wildcard -> [Int]
 wildcardToNums w = trans ['0' .. '9']
-  where 
+  where
     trans = map read . filter isProperStr . map (replaceAll w '*')
 
 isProperStr :: String -> Bool
@@ -56,7 +56,7 @@ isProperStr s       = (last s) `elem` "*13579"
 -- | returns wild cards from number of digits and number of stars
 genWildcards :: Int -> Int -> [Wildcard]
 genWildcards digits stars = filter isProperStr . concatMap Utils.permutations $ xs
-  where 
+  where
     xs = map (++ replicate stars '*') $ Monad.replicateM (digits - stars) "0123456789"
 
 
@@ -79,7 +79,7 @@ allTheSame xs = and $ zipWith (==) xs (tail xs)
 -- [Combinatoric selections](http://projecteuler.net/problem=53)
 prob053 :: Int
 prob053 = length $ filter (> 10^6) xs
-  where 
+  where
     xs :: [Integer]
     xs = concat $ pascalTriangle 100
 
@@ -99,7 +99,7 @@ type Hand = [String] -- example: ["6D", "7H", "AH", "7S", "QC"]
 type Rank = Int
 
 prob054 :: IO Int
-prob054 = do 
+prob054 = do
     dat <- data054
     return $ length [1 | (h1, h2) <- dat, poker h1 h2 == "left"]
 
@@ -123,7 +123,7 @@ allMax rankFunc hands = filter (\h -> rankFunc h == oneMax) hands
 handRank :: Hand -> (Rank, [Rank])
 handRank hand
   | isStraight ranks && isFlush hand  = (8, [maximum ranks])
-  | isKind 4 ranks                    = (7, [kind 4 ranks, kind 1 ranks]) 
+  | isKind 4 ranks                    = (7, [kind 4 ranks, kind 1 ranks])
   | isKind 3 ranks && isKind 2 ranks  = (6, [kind 3 ranks, kind 2 ranks])
   | isFlush hand                      = (5, ranks)
   | isStraight ranks                  = (4, [maximum ranks])
@@ -133,14 +133,14 @@ handRank hand
   | otherwise                         = (0, ranks)
     where ranks = cardRanks hand
 
--- | 
+-- |
 -- >>> cardRanks ["6D", "7H", "AH", "7S", "QC"]
 -- [14,12,7,7,6]
 cardRanks :: Hand -> [Rank]
 cardRanks hand
   | rank == [14,5,4,3,2] = [5,4,3,2,1]
   | otherwise            = rank
-    where rank = reverse . List.sort  
+    where rank = reverse . List.sort
                $ map (Maybe.fromJust . (`List.elemIndex` "--23456789TJQKA") . head) hand
 
 isFlush :: Hand -> Bool
@@ -148,7 +148,7 @@ isFlush hand = length (List.nub suits) == 1
   where suits = map last hand
 
 isStraight :: [Rank] -> Bool
-isStraight ranks = maximum ranks - minimum ranks == 4 && length (List.nub ranks) == 5 
+isStraight ranks = maximum ranks - minimum ranks == 4 && length (List.nub ranks) == 5
 
 -- |
 -- >>> kind 2 [14,14,14,7,7]
@@ -188,7 +188,7 @@ count x xs = length $ filter (== x) xs
 
 -- | Problem 55
 -- [Lychrel numbers](http://projecteuler.net/problem=55)
--- 
+--
 prob055 :: Int
 prob055 = length $ filter isLychrel [1..9999]
 
@@ -198,22 +198,22 @@ prob055 = length $ filter isLychrel [1..9999]
 -- >>> digitRevSum 4213
 -- 7337
 digitRevSum :: (Integral a, Show a, Read a) => a -> a
-digitRevSum n = n + (read . reverse . show) n 
+digitRevSum n = n + (read . reverse . show) n
 
 -- | repetitive application of digitRevSum easily exceeds maxBound of Int
 --
 -- >>> isLychrel 349
 -- False
 -- >>> isLychrel 196
--- True 
+-- True
 isLychrel :: Int -> Bool
 isLychrel n = helper (fromIntegral n) 0
-  where 
+  where
     helper :: Integer -> Int -> Bool
     helper _ 50  = True
     helper p count
       | Utils.isPalindrome p = False
-      | otherwise            = helper (digitRevSum p) (count+1)  
+      | otherwise            = helper (digitRevSum p) (count+1)
 
 
 
@@ -221,7 +221,7 @@ isLychrel n = helper (fromIntegral n) 0
 -- [Powerful digit sum](http://projecteuler.net/problem=56)
 prob056 :: Int
 prob056 = maximum [digitSum (a^b) | a <- [80..100], b <- [80..100]]
-  
+
 digitSum :: Integer -> Int
 digitSum = sum . Utils.integerDigits
 
@@ -238,7 +238,7 @@ moreDigitsInNumerator r = (a > b)
     [a, b] = map digitLen [Ratio.numerator r, Ratio.denominator r]
     digitLen = length . show
 
--- | 
+-- |
 -- contFraction [a1, a2, a3, a4] gives
 -- a1 + 1 / (a2 + 1 / (a3 + 1 / a4))
 --
@@ -248,7 +248,7 @@ contFraction :: [Int] -> Rational
 contFraction xs = foldr (\x p -> fromIntegral x + 1 / p) r (init xs)
   where r = fromIntegral (last xs) % 1
 
--- | 
+-- |
 -- >>> take 5 $ expansionSeries
 -- [3 % 2,7 % 5,17 % 12,41 % 29,99 % 70]
 expansionSeries :: [Rational]
@@ -266,12 +266,12 @@ prob058 = 2 * stages + 1
     stages = 1 + length (takeWhile moreThanTenPercent primeCount)
 
 -- Count (a) number of diagonals (b) number of primes out of them, for each stage.
--- And return infinite series of (a, b) for increasing stage. 
+-- And return infinite series of (a, b) for increasing stage.
 -- Note that the center (number 1) contributes to (0, 1) the initial value to scanl.
 primeCount :: [(Int, Int)]
 primeCount = tail $ scanl (\(a, b) xs -> (a + countPrimes xs, b + 4)) (0, 1) xss
   where
-    xss = map (\i -> [(2*i-1)^2 + 2*i, 
+    xss = map (\i -> [(2*i-1)^2 + 2*i,
                       (2*i-1)^2 + 4*i,
                       (2*i+1)^2 - 2*i,
                       (2*i+1)^2      ] ) [1..]
@@ -309,12 +309,12 @@ applyKey raw key = map Char.chr $ zipWith Bits.xor raw (cycle xs)
 -- [Prime pair sets](http://projecteuler.net/problem=60)
 
 -- When two prime numbers a and b give primes when concatenated in both orders,
--- I take it as an edge connecting two nodes (a,b). Mapping the problem into 
--- a graph, I look for maximum complete subgraphs (cliques) that have five nodes.	
+-- I take it as an edge connecting two nodes (a,b). Mapping the problem into
+-- a graph, I look for maximum complete subgraphs (cliques) that have five nodes.
 
 
 -- | Even slower version
--- 
+--
 -- prob060' :: Int
 -- prob060' = sum . head . filter (\vs -> length vs == 5) vss
 --   where

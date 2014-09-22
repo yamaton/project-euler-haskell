@@ -2,16 +2,16 @@
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 
-import           Control.Lens ((^.))
-import qualified Data.List     as List
-import qualified Data.Char     as Char
-import qualified Data.Set      as Set
-import qualified Data.IntSet   as IntSet
-import qualified Data.Ratio    as Ratio
-import qualified Control.Monad as Monad
-import qualified Network.Wreq   as Wreq
-import qualified Data.ByteString.Lazy.Char8  as BLC8
-import           System.Environment (getArgs)
+import           Control.Lens               ((^.))
+import qualified Control.Monad              as Monad
+import qualified Data.ByteString.Lazy.Char8 as BLC8
+import qualified Data.Char                  as Char
+import qualified Data.IntSet                as IntSet
+import qualified Data.List                  as List
+import qualified Data.Ratio                 as Ratio
+import qualified Data.Set                   as Set
+import qualified Network.Wreq               as Wreq
+import           System.Environment         (getArgs)
 import qualified Utils
 
 -- | Problem 61
@@ -65,7 +65,7 @@ allCubes n = [ x | a <- [start..end], let x = a^3]
 
 
 -- | Find (exactly) k cubes related by digit permutations among the n ndigit numbers
--- 
+--
 -- >>> findPermsFromCubes 3 8
 -- [[41063625,56623104,66430125]]
 --
@@ -85,7 +85,7 @@ findPermsFromCubes k n = [[x | x <- xs, x `isPermOf` ds] | ds <- dss ]
 -- How many n-digit positive integers exist which are also an nth power?
 
 -- n-digit integer that is nth power is represented by
--- 10^(n-1) <= x^n < 10^n 
+-- 10^(n-1) <= x^n < 10^n
 -- which gives the lower and upper bound of x
 -- 10^((n-1)/n)) <= x < 10
 -- This equality also gives the upper bound of n
@@ -112,14 +112,14 @@ period n = detectPeriod . tail . takeWhile (\(a, b, c) -> c /= 0) $ iterate (ste
   where
     stepMod :: Int -> (Int, Int, Int) -> (Int, Int, Int)
     stepMod n (a, b, c) = (aNext, bNext, cNext)
-      where 
+      where
         k = floor $ (fromIntegral a * sqrt (fromIntegral n) + fromIntegral b) / fromIntegral c
         aTemp = a * c
         bTemp = c * (c * k - b)
         cTemp = a^2 *n - (b - c*k)^2
         factor = foldr1 gcd [aTemp, bTemp, cTemp]
         [aNext, bNext, cNext] = map (`div` factor) [aTemp, bTemp, cTemp]
-    
+
     detectPeriod :: (Eq a) => [a] -> Int
     detectPeriod []     = 0
     detectPeriod (x:xs) = 1 + length (takeWhile (/= x) xs)
@@ -153,10 +153,10 @@ isNotSquare n = p * p /= n
 
 -- Return (x, y), with the minimum x, for given d satisfying the Pell's equation
 --    x^2 - d * y^2 == 1
--- 
+--
 -- >>> pellsEquation 5
 -- (9, 4)
--- >>> pellsEquation 7 
+-- >>> pellsEquation 7
 -- (8, 3)
 --
 pellsEquation :: Int -> (Integer, Integer)
@@ -171,13 +171,13 @@ convergents :: Int -> [Rational]
 convergents =  map fromContinuedFraction . tail . List.inits . sqrtToContinuedFraction
 
 sqrtToContinuedFraction :: Int -> [Int]
-sqrtToContinuedFraction n = List.unfoldr (step n) (1, 0, 1) 
+sqrtToContinuedFraction n = List.unfoldr (step n) (1, 0, 1)
   where
     step :: Int -> (Int, Int, Int) -> Maybe (Int, (Int, Int, Int))
     step n (a, b, c)
       | c == 0    = Nothing
       | otherwise = Just (k, (aNext, bNext, cNext))
-      where 
+      where
         k = floor $ (fromIntegral a * sqrt (fromIntegral n) + fromIntegral b) / fromIntegral c
         aTemp = a * c
         bTemp = c * (c * k - b)
@@ -217,9 +217,9 @@ isValid :: [Int] -> Bool
 isValid = all (\ds -> sum ds == 14) . Utils.partition 3 3
 
 prepareDigits :: [[Int]]
-prepareDigits = [Utils.roundRobin [x, y, (tail y ++ [head y])] | 
+prepareDigits = [Utils.roundRobin [x, y, (tail y ++ [head y])] |
                     x <- outers, y <- inners]
-  where 
+  where
     outers = map (6:) $ List.permutations [7..10]
     inners = List.permutations [1..5]
 
@@ -235,15 +235,15 @@ prob069 = last . takeWhile (< 1000000) . scanl1 (*) $ Utils.primes 100
 -- [Totient permutation](http://projecteuler.net/problem=70)
 
 -- Prime pair possibly gives the minimum n/φ(n) but not necessary.
--- Maybe triplet give better result. But following code assume pair give the minimum. 
+-- Maybe triplet give better result. But following code assume pair give the minimum.
 prob070 :: Int
-prob070 = product . snd . minimum $ [ (n Ratio.% phiN, pair) | 
-                                          pair <- pairs, 
-                                          let n = product pair, 
+prob070 = product . snd . minimum $ [ (n Ratio.% phiN, pair) |
+                                          pair <- pairs,
+                                          let n = product pair,
                                           let phiN = product (map (subtract 1) pair),
                                           arePerms n phiN ]
     where
-    pairs = filter (\p -> product p < 10000000) 
+    pairs = filter (\p -> product p < 10000000)
               . Utils.combinations 2 . dropWhile (< 1000) $ Utils.primesTo 10000
 
 arePerms :: Int -> Int -> Bool
