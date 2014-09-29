@@ -1,11 +1,11 @@
 {-# OPTIONS_GHC -Wall                     #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
-{-# LANGUAGE BangPatterns #-}
 
 import           Control.Lens               ((^.))
 import qualified Control.Monad              as Monad
 import qualified Data.Bits                  as Bits
+import qualified Data.ByteString.Lazy.Char8 as BLC8
 import qualified Data.Char                  as Char
 import qualified Data.IntSet                as IntSet
 import qualified Data.List                  as List
@@ -13,11 +13,8 @@ import qualified Data.Maybe                 as Maybe
 import           Data.Ratio                 ((%))
 import qualified Data.Ratio                 as Ratio
 import qualified Network.Wreq               as Wreq
-import           Text.Regex.Posix           ((=~))
-
---import qualified Data.ByteString.Lazy    as BL
-import qualified Data.ByteString.Lazy.Char8 as BLC8
 import           System.Environment         (getArgs)
+import           Text.Regex.Posix           ((=~))
 import qualified Utils
 
 
@@ -51,7 +48,7 @@ wildcardToNums w = trans ['0' .. '9']
 
 isProperStr :: String -> Bool
 isProperStr ('0':_) = False
-isProperStr s       = (last s) `elem` "*13579"
+isProperStr s       = last s `elem` "*13579"
 
 -- | returns wild cards from number of digits and number of stars
 genWildcards :: Int -> Int -> [Wildcard]
@@ -118,7 +115,7 @@ poker hand1 hand2
 
 allMax :: (Eq a, Ord b) => (a -> b) -> [a] -> [a]
 allMax rankFunc hands = filter (\h -> rankFunc h == oneMax) hands
-  where oneMax = last . List.sort $ map rankFunc hands
+  where oneMax = maximum $ map rankFunc hands
 
 handRank :: Hand -> (Rank, [Rank])
 handRank hand
@@ -399,5 +396,3 @@ main :: IO ()
 main = getArgs >>= return . read . head >>= select >>= print
 -- main = data059 >>= print . decrypt
 -- main = print prob060'
-
-

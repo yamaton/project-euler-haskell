@@ -3,13 +3,9 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 
 import           Control.Lens               ((^.))
-import qualified Control.Monad              as Monad
 import qualified Data.ByteString.Lazy.Char8 as BLC8
-import qualified Data.Char                  as Char
-import qualified Data.IntSet                as IntSet
 import qualified Data.List                  as List
 import qualified Data.Ratio                 as Ratio
-import qualified Data.Set                   as Set
 import qualified Network.Wreq               as Wreq
 import           System.Environment         (getArgs)
 import qualified Utils
@@ -55,7 +51,8 @@ isCyclic xs = isLinkable (last xs) (head xs)
 -- Find the smallest cube for which exactly five permutations of its digits are cube.
 
 prob062 :: Int
-prob062 = head [ minimum (concat xss) | n <- [1..], let xss = findPermsFromCubes 5 n, (not . null) xss ]
+prob062 = head [ minimum (concat xss) | n <- [1..],
+                      let xss = findPermsFromCubes 5 n, (not . null) xss ]
 
 -- | Return all cubes of the specified digit length.
 allCubes :: Int -> [Int]
@@ -217,7 +214,7 @@ isValid :: [Int] -> Bool
 isValid = all (\ds -> sum ds == 14) . Utils.partition 3 3
 
 prepareDigits :: [[Int]]
-prepareDigits = [Utils.roundRobin [x, y, (tail y ++ [head y])] |
+prepareDigits = [Utils.roundRobin [x, y, tail y ++ [head y]] |
                     x <- outers, y <- inners]
   where
     outers = map (6:) $ List.permutations [7..10]

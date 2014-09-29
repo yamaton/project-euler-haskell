@@ -2,15 +2,14 @@
 {-# OPTIONS_GHC -fno-warn-name-shadowing  #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 
-import           Control.Lens ((^.))
-import           Data.List ((\\))
-import qualified Data.List   as List
-import qualified Data.Char   as Char
-import qualified Data.IntSet as IntSet
-import qualified Control.Monad as Monad
-import qualified Network.Wreq as Wreq
+import           Control.Lens               ((^.))
+import qualified Control.Monad              as Monad
 import qualified Data.ByteString.Lazy.Char8 as BLC8
-import           System.Environment (getArgs)
+import qualified Data.Char                  as Char
+import qualified Data.IntSet                as IntSet
+import qualified Data.List                  as List
+import qualified Network.Wreq               as Wreq
+import           System.Environment         (getArgs)
 import qualified Utils
 
 
@@ -63,7 +62,7 @@ funcA n = go 1 (rem 10 p)
 
 
 -- Problem 135
--- 
+--
 prob135 :: Int
 prob135 = length $ filter isGood135 [1..1000000]
 
@@ -74,7 +73,7 @@ isGood135 n
   where as = Utils.divisors n
         bs = reverse as
         pairs = filter cond $ zip as bs
-        cond (a, b) = b < 3*a && mod (a+b) 4 == 0 
+        cond (a, b) = b < 3*a && mod (a+b) 4 == 0
 
 
 
@@ -112,4 +111,3 @@ multOfFact n p = sum . takeWhile (> 0) $ map (\i -> n `div` p^i) [1..]
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 main = print prob127
-

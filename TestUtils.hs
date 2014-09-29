@@ -1,33 +1,33 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-import Test.Framework.TH (defaultMainGenerator)
-import Test.HUnit ((@?), (@?=), (@=?))
-import Test.QuickCheck ((==>))
-import Test.Framework.Providers.HUnit (testCase)
-import Test.Framework.Providers.QuickCheck2 (testProperty)
+import           Test.Framework.Providers.HUnit       (testCase)
+import           Test.Framework.Providers.QuickCheck2 (testProperty)
+import           Test.Framework.TH                    (defaultMainGenerator)
+import           Test.HUnit                           ((@=?), (@?), (@?=))
+import           Test.QuickCheck                      ((==>))
 
-import qualified Data.Set as Set
-import qualified Data.List as List
+import qualified Data.List                            as List
+import qualified Data.Set                             as Set
 import qualified Utils
 
 
 -----------------------------------
 --     Test  roundRobin
 -----------------------------------
-prop_roundRobin xss = 
+prop_roundRobin xss =
     lhs xss == rhs xss
-        where 
+        where
             types = xss :: [[Int]]
             lhs = length . concat
             rhs = length . roundRobin
 
-case_roundRobin1 = 
+case_roundRobin1 =
     roundRobin ["abc", "d", "ef"] @?= "adebfc"
-    
-case_roundRobin2 = 
+
+case_roundRobin2 =
     roundRobin ["abc"] @?= "abc"
 
-case_roundRobin3 = 
+case_roundRobin3 =
     roundRobin ["abc", "d", ""] @?= "adbc"
 
 
@@ -36,11 +36,11 @@ case_roundRobin3 =
 -----------------------------------
 
 ---- | This is wrong: consider x = 0,  xs = [0].  Or x = 0 and xs = [0,2]
---prop_splitOn x xs = 
+--prop_splitOn x xs =
 --    xs == List.intercalate [x] (splitOn x xs)
 --        where types = (x :: Char, xs :: String)
 
-case_splitOn1 = 
+case_splitOn1 =
     splitOn ',' "aa,bc,cd,e" @?= ["aa","bc","cd","e"]
 
 
@@ -48,24 +48,24 @@ case_splitOn1 =
 -----------------------------------
 --     Test  combinations
 -----------------------------------
---prop_combi n xs 
+--prop_combi n xs
 --    = 0 < n && n < 3 && n <= length xs ==> lhs xs == rhs xs
---        where 
+--        where
 --            types = (n :: Int, xs :: [Int])
 --            lhs :: Ord a => [a] -> Set.Set (Set.Set a)
 --            lhs = Set.fromList . map Set.fromList . filter ((== n) . length) . List.subsequences
 --            rhs :: Ord a => [a] -> Set.Set (Set.Set a)
 --            rhs = Set.fromList . map Set.fromList . combinations n
-          
-case_combi1 = 
+
+case_combi1 =
     combinations 2 [1..4] @?= [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]
 
 
 --------------------------------------------
---     Test  combinations with replacement 
+--     Test  combinations with replacement
 --------------------------------------------
 
-case_combiWithRep = 
+case_combiWithRep =
     combinationsWithReplacement 2 "abc" @?= ["aa","ab","ac","bb","bc","cc"]
 
 

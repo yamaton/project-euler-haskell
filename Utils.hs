@@ -12,7 +12,6 @@ import           Data.Array.Unboxed  (UArray, assocs)
 import qualified Data.Char           as Char
 import           Data.Hashable       (Hashable)
 import qualified Data.HashSet        as HashSet
-import           Data.List           (foldl')
 import qualified Data.List           as List
 import qualified Data.Map            as Map
 import qualified Data.Ord            as Ord
@@ -58,6 +57,24 @@ partition _ _ [] = []
 partition n d xs
   | length (take n xs) < n = []
   | otherwise              = take n xs : partition n d (drop d xs)
+
+
+{- | group by chunks
+[Note] Elements are discarded if the number is not enough to make a chunk.
+The behavior is different in Data.List.Split.chunksOf.
+
+>>> chunksOf 3 [1,2,3,4,5,6]
+[[1,2,3],[4,5,6]]
+
+>>> chunksOf 3 [1,2,3,4,5,6,7]
+[[1,2,3],[4,5,6]]
+
+>>> chunksOf 4 [1,2,3]
+[]
+
+-}
+chunksOf :: Int -> [a] -> [[a]]
+chunksOf n = partition n n
 
 
 {- | round robin
@@ -123,23 +140,25 @@ partialPermutations n xs = concatMap List.permutations $ combinations n xs
 
 {- | combinations n xs
      generates combinations of length n
+     source: http://www.geocities.jp/m_hiroi/func/haskell06.html
 
 >>> combinations 2 [1..4]
 [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]
 
 -}
 combinations :: Int -> [a] -> [[a]]
-combinations 0 _ = [[]]
-combinations _ [] = []
-combinations 1 xs = map (:[]) xs
-combinations n xs = helper n (length xs) xs
-  where
-    helper k l ys@(z:zs)
-      | k < l     = map (z:) (combinations (k-1) zs) ++ combinations k zs
-      | k == l    = [ys]
-      | otherwise = []
-    -- Never used; just to supress the non-exhaustive pattern warning
-    helper _ _ _  = []
+combinations 0 _      = [[]]
+combinations _ []     = []
+combinations n (x:xs) = map (x:) (combinations (n-1) xs) ++ combinations n xs
+-- combinations 1 xs = map (:[]) xs
+-- combinations n xs = helper n (length xs) xs
+--   where
+--     helper k l ys@(z:zs)
+--       | k < l     = map (z:) (combinations (k-1) zs) ++ combinations k zs
+--       | k == l    = [ys]
+--       | otherwise = []
+--     -- Never used; just to supress the non-exhaustive pattern warning
+--     helper _ _ _  = []
 
 
 {- | Equivalent to `combinations_with_relacement` in itertools of Python,
@@ -479,7 +498,7 @@ binomial :: Integral a => a -> a -> a
 binomial n k
   | k < 0     = 0
   | k > n     = 0
-  | otherwise = foldl' (\z i -> z * (n-i+1) `div` i) 1 [1..min k (n-k)]
+  | otherwise = List.foldl' (\z i -> z * (n-i+1) `div` i) 1 [1..min k (n-k)]
 
 
 
@@ -550,6 +569,3 @@ transpose xss = foldr (zipWith (:)) (repeat []) xss
 -- "k"
 -- detectCycle :: Eq a => [a] -> [a]
 -- detectCycle = undefined
-
-
-
