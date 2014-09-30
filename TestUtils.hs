@@ -1,9 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-import           Test.HUnit            ((@=?), (@?), (@?=))
-import           Test.QuickCheck       ((==>))
-import           Test.Tasty.HUnit      (testCase)
-import           Test.Tasty.QuickCheck (testProperty)
+import           Test.Tasty.HUnit      (testCase, (@=?), (@?), (@?=))
+import           Test.Tasty.QuickCheck (testProperty, (==>))
 import           Test.Tasty.TH         (defaultMainGenerator)
 
 import qualified Data.IntSet           as IntSet
@@ -76,12 +74,13 @@ case_splitOn1 =
 -----------------------------------
 
 prop_permutations1 xs =
+    length xs < 8 ==>
     List.sort (permutations xs) == List.sort (List.permutations xs)
       where types = xs :: [Int]
 
 
 prop_permutations2 n xs =
-    n > 0 ==>
+    n > 0 && length xs < 8 ==>
     lhs == rhs
       where types = (n :: Int, xs :: [Int])
             lhs = partialPermutations n xs
