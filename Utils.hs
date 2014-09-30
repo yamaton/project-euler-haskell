@@ -559,13 +559,13 @@ transpose xss = foldr (zipWith (:)) (repeat []) xss
 
 
 -- | detect cycle
--- >>> detectCycle ("abcabcabc" ++  cycle "ppd")
+-- detectCycle ("abcabcabc" ++ cycle "ppd")
 -- "ppd"
--- >>> detectCycle ("abcabcabc" ++  cycle "ddc")
+-- detectCycle ("abcabcabc" ++ cycle "ddc")
 -- "cdd"
--- >>> detectCycle "acccckkkkkkkkkkkkkk"
+-- detectCycle "acccckkkkkkkkkkkkkk"
 -- ""
--- >>> detectCycle ("acccckkkkkk" ++ repeat 'k')
+-- detectCycle ("acccckkk" ++ repeat 'k')
 -- "k"
 -- detectCycle :: Eq a => [a] -> [a]
 -- detectCycle = undefined

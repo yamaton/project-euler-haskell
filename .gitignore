@@ -33,3 +33,9 @@ Solutions61-70
 Solutions100-
 
 Solutions71-80
+
+*.dyn_hi
+
+*.dyn_o
+
+TestUtils
