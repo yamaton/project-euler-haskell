@@ -113,6 +113,7 @@ joinList = List.intercalate
 
 
 {- | permutations
+     source: http://www.geocities.jp/m_hiroi/func/haskell06.html
 
 >>> permutations "abaa"
 ["abaa","aaba","aaab","baaa"]
@@ -121,21 +122,36 @@ joinList = List.intercalate
 [[2,1,1],[1,2,1],[1,1,2]]
 
 -}
-permutations :: Eq a => [a] -> [[a]]
+select :: [a] -> [(a, [a])]
+select [x]    = [(x, [])]
+select (x:xs) = (x, xs) : [(y, x:ys) | (y, ys) <- select xs]
+select _      = []
+
+permutations :: [a] -> [[a]]
 permutations [] = [[]]
-permutations xs = [p:ps | p  <- List.nub xs,
-                          ps <- permutations $ List.delete p xs]
+permutations xs = concat [map (y:) (permutations ys) | (y, ys) <- select xs]
+
+
+-- permutations :: Eq a => [a] -> [[a]]
+-- permutations [] = [[]]
+-- permutations xs = [p:ps | p  <- List.nub xs,
+--                           ps <- permutations $ List.delete p xs]
 
 
 {- | partialPermutations n xs
      generates permutaitons of length n
+     source: http://www.geocities.jp/m_hiroi/func/haskell06.html
 
->>> partialPermutations 2 [1..4]
-[[1,2],[2,1],[1,3],[3,1],[1,4],[4,1],[2,3],[3,2],[2,4],[4,2],[3,4],[4,3]]
+>>> partialPermutations 2 [1..5]
+ [[1,2],[1,3],[1,4],[1,5],[2,1],[2,3],[2,4],[2,5],[3,1],[3,2],[3,4],[3,5],[4,1],[4,2],[4,3],[4,5],[5,1],[5,2],[5,3],[5,4]]
 
 -}
 partialPermutations :: Int -> [a] -> [[a]]
-partialPermutations n xs = concatMap List.permutations $ combinations n xs
+partialPermutations 0 _  = [[]]
+partialPermutations n xs =
+  [y:zs | (y, ys) <- select xs, zs <- partialPermutations (n - 1) ys]
+
+
 
 
 {- | combinations n xs
@@ -150,6 +166,7 @@ combinations :: Int -> [a] -> [[a]]
 combinations 0 _      = [[]]
 combinations _ []     = []
 combinations n (x:xs) = map (x:) (combinations (n-1) xs) ++ combinations n xs
+
 -- combinations 1 xs = map (:[]) xs
 -- combinations n xs = helper n (length xs) xs
 --   where
@@ -159,6 +176,8 @@ combinations n (x:xs) = map (x:) (combinations (n-1) xs) ++ combinations n xs
 --       | otherwise = []
 --     -- Never used; just to supress the non-exhaustive pattern warning
 --     helper _ _ _  = []
+
+
 
 
 {- | Equivalent to `combinations_with_relacement` in itertools of Python,

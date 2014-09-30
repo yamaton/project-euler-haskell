@@ -1,14 +1,14 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-import           Test.Framework.Providers.HUnit       (testCase)
-import           Test.Framework.Providers.QuickCheck2 (testProperty)
-import           Test.Framework.TH                    (defaultMainGenerator)
-import           Test.HUnit                           ((@=?), (@?), (@?=))
-import           Test.QuickCheck                      ((==>))
+import           Test.HUnit            ((@=?), (@?), (@?=))
+import           Test.QuickCheck       ((==>))
+import           Test.Tasty.HUnit      (testCase)
+import           Test.Tasty.QuickCheck (testProperty)
+import           Test.Tasty.TH         (defaultMainGenerator)
 
-import qualified Data.List                            as List
-import qualified Data.Set                             as Set
-import qualified Data.IntSet                          as IntSet
+import qualified Data.IntSet           as IntSet
+import qualified Data.List             as List
+import qualified Data.Set              as Set
 import           Utils
 
 
@@ -44,7 +44,7 @@ case_partition3 =
 
 
 -----------------------------------
---     Test  roundRobin
+--     roundRobin
 -----------------------------------
 prop_roundRobin xss =
     lhs xss == rhs xss
@@ -64,7 +64,7 @@ case_roundRobin3 =
 
 
 -----------------------------------
---     Test  splitOn
+--     splitOn
 -----------------------------------
 
 case_splitOn1 =
@@ -72,15 +72,25 @@ case_splitOn1 =
 
 
 -----------------------------------
---     Test  permutations
+--     permutations, partialPermutations
 -----------------------------------
 
+prop_permutations1 xs =
+    List.sort (permutations xs) == List.sort (List.permutations xs)
+      where types = xs :: [Int]
 
+
+prop_permutations2 n xs =
+    n > 0 ==>
+    lhs == rhs
+      where types = (n :: Int, xs :: [Int])
+            lhs = partialPermutations n xs
+            rhs = concatMap List.permutations (combinations n xs)
 
 
 
 -----------------------------------
---     Test  combinations
+--     combinations
 -----------------------------------
 -- prop_combi n xs =
 --     0 < n && n < 3 && n <= length xs ==>
@@ -99,8 +109,20 @@ case_combi1 =
 
 
 --------------------------------------------
---     Test  combinations with replacement
+--     combinations with replacement
 --------------------------------------------
 
 case_combiWithRep =
     combinationsWithReplacement 2 "abc" @?= ["aa","ab","ac","bb","bc","cc"]
+
+
+
+--------------------------------------------
+--     frequencies, mostFrequent
+--------------------------------------------
+
+case_frequencies1 =
+  frequencies "aaaddbcdabbbaf" @?= [('a',5),('b',4),('c',1),('d',3),('f',1)]
+
+case_frequencies2 =
+  mostFrequent "dksljjjdskafjajakdfjaklsjfajjj" @?= 'j'
