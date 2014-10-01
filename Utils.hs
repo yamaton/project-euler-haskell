@@ -4,18 +4,19 @@
 
 module Utils where
 
-import           Control.Applicative ((<$>), (<*>))
+import           Control.Applicative (liftA2)
 import           Control.Monad       (forM_, replicateM, when)
 import           Data.Array.ST       (newArray, readArray, runSTUArray,
                                       writeArray)
 import           Data.Array.Unboxed  (UArray, assocs)
 import qualified Data.Char           as Char
 import           Data.Hashable       (Hashable)
-import qualified Data.HashSet        as HashSet
 import qualified Data.List           as List
 import qualified Data.Map            as Map
 import qualified Data.Ord            as Ord
+import qualified Data.Set            as Set
 import qualified Numeric
+
 
 --------------------------------------------------------------
 --              List Utilities
@@ -113,29 +114,46 @@ joinList = List.intercalate
 
 
 {- | permutations
-     source: http://www.geocities.jp/m_hiroi/func/haskell06.html
 
->>> permutations "abaa"
-["abaa","aaba","aaab","baaa"]
+>>> permutations [1,2,3]
+[[1,2,3],[1,3,2],[2,1,3],[2,3,1],[3,1,2],[3,2,1]]
 
->>> permutations [2,1,1]
-[[2,1,1],[1,2,1],[1,1,2]]
+>>> permutations "aba"
+["aab","aba","baa"]
 
 -}
+-- source: http://www.geocities.jp/m_hiroi/func/haskell06.html
+permutations :: Ord a => [a] -> [[a]]
+permutations [] = [[]]
+permutations xs = Set.toList . Set.fromList $ xss
+  where xss = concat [map (y:) (permutations ys) | (y, ys) <- select xs]
+
 select :: [a] -> [(a, [a])]
 select [x]    = [(x, [])]
 select (x:xs) = (x, xs) : [(y, x:ys) | (y, ys) <- select xs]
 select _      = []
 
-permutations :: [a] -> [[a]]
-permutations [] = [[]]
-permutations xs = concat [map (y:) (permutations ys) | (y, ys) <- select xs]
-
-
+--
 -- permutations :: Eq a => [a] -> [[a]]
 -- permutations [] = [[]]
 -- permutations xs = [p:ps | p  <- List.nub xs,
 --                           ps <- permutations $ List.delete p xs]
+--
+
+
+-- source: http://www.geocities.jp/m_hiroi/func/haskell06.html
+-- partialPermutations :: Ord a => Int -> [a] -> [[a]]
+-- partialPermutations 0 _  = [[]]
+-- partialPermutations n xs =
+--     Set.toList . Set.fromList
+--     $ [y:zs | (y, ys) <- select xs, zs <- partialPermutations (n - 1) ys]
+--
+--
+-- combinations :: Int -> [a] -> [[a]]
+-- combinations 0 _      = [[]]
+-- combinations _ []     = []
+-- combinations n (x:xs) = map (x:) (combinations (n-1) xs) ++ combinations n xs
+--
 
 
 {- | partialPermutations n xs
@@ -143,39 +161,38 @@ permutations xs = concat [map (y:) (permutations ys) | (y, ys) <- select xs]
      source: http://www.geocities.jp/m_hiroi/func/haskell06.html
 
 >>> partialPermutations 2 [1..5]
- [[1,2],[1,3],[1,4],[1,5],[2,1],[2,3],[2,4],[2,5],[3,1],[3,2],[3,4],[3,5],[4,1],[4,2],[4,3],[4,5],[5,1],[5,2],[5,3],[5,4]]
+[[1,2],[1,3],[1,4],[1,5],[2,1],[2,3],[2,4],[2,5],[3,1],[3,2],[3,4],[3,5],[4,1],[4,2],[4,3],[4,5],[5,1],[5,2],[5,3],[5,4]]
+
+>>> partialPermutations 2 [0,0,1]
+[[0,0],[0,1],[1,0]]
 
 -}
-partialPermutations :: Int -> [a] -> [[a]]
-partialPermutations 0 _  = [[]]
-partialPermutations n xs =
-  [y:zs | (y, ys) <- select xs, zs <- partialPermutations (n - 1) ys]
-
+partialPermutations :: Ord a => Int -> [a] -> [[a]]
+partialPermutations n xs = concatMap permutations (combinations n xs)
 
 
 
 {- | combinations n xs
      generates combinations of length n
-     source: http://www.geocities.jp/m_hiroi/func/haskell06.html
 
 >>> combinations 2 [1..4]
 [[1,2],[1,3],[1,4],[2,3],[2,4],[3,4]]
 
--}
-combinations :: Int -> [a] -> [[a]]
-combinations 0 _      = [[]]
-combinations _ []     = []
-combinations n (x:xs) = map (x:) (combinations (n-1) xs) ++ combinations n xs
+>>> combinations 2 [0,0,1]
+[[0,0],[0,1]]
 
--- combinations 1 xs = map (:[]) xs
--- combinations n xs = helper n (length xs) xs
---   where
---     helper k l ys@(z:zs)
---       | k < l     = map (z:) (combinations (k-1) zs) ++ combinations k zs
---       | k == l    = [ys]
---       | otherwise = []
---     -- Never used; just to supress the non-exhaustive pattern warning
---     helper _ _ _  = []
+-}
+
+combinations :: Int -> [a] -> [[a]]
+combinations 1 xs = map (:[]) xs
+combinations n xs = helper n (length xs) xs
+  where
+    helper k l ys@(z:zs)
+      | k < l     = map (z:) (combinations (k-1) zs) ++ combinations k zs
+      | k == l    = [ys]
+      | otherwise = []
+    -- Never used; just to supress the non-exhaustive pattern warning
+    helper _ _ _  = []
 
 
 
@@ -188,7 +205,7 @@ combinations n (x:xs) = map (x:) (combinations (n-1) xs) ++ combinations n xs
 -}
 combinationsWithReplacement :: (Ord a, Hashable a) => Int -> [a] -> [[a]]
 combinationsWithReplacement n =
-  List.sort . HashSet.toList . HashSet.fromList . map List.sort . replicateM n
+  List.sort . Set.toList . Set.fromList . map List.sort . replicateM n
 
 
 {- | Equivalent to Tuple in Mathematica
@@ -233,7 +250,7 @@ mostFrequent = fst . List.maximumBy (Ord.comparing snd) . frequencies
 
 -}
 cartesianProduct :: [[a]] -> [[a]]
-cartesianProduct = foldr (\xs acc -> (:) <$> xs <*> acc) [[]]
+cartesianProduct = foldr (liftA2 (:)) [[]]
 
 
 {- | Conunt elements in list
