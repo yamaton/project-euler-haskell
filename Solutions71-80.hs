@@ -8,6 +8,7 @@ import qualified Data.ByteString.Lazy.Char8 as BLC8
 import qualified Data.Char                  as Char
 import qualified Data.IntSet                as IntSet
 import qualified Data.List                  as List
+import qualified Data.Number.CReal          as CReal
 import qualified Data.Ord                   as Ord
 import qualified Data.Ratio                 as Ratio
 import qualified Data.Set                   as Set
@@ -90,10 +91,14 @@ data079 = do
 -- | Problem 80
 -- [Square root digital expansion](http://projecteuler.net/problem=80)
 prob080 :: Int
-prob080 = undefined
+prob080 = sum . map hundredDigitSumOfSqrt . filter (`notElem` map (^2) [1..10]) $ [1..100]
 
-
-
+hundredDigitSumOfSqrt :: Int -> Int
+hundredDigitSumOfSqrt = sum . take 100
+                            . map Char.digitToInt
+                            . filter Char.isDigit
+                            . CReal.showCReal 110  -- to avoid rounding error like 0.099999 -> 0.10
+                            . sqrt . fromIntegral
 
 
 
@@ -107,6 +112,4 @@ prob080 = undefined
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
-main = prob079 >>= print
-
-
+main = print prob080
