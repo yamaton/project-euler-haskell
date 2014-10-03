@@ -8,6 +8,7 @@ import qualified Data.ByteString.Lazy.Char8 as BLC8
 import qualified Data.Char                  as Char
 import qualified Data.IntSet                as IntSet
 import qualified Data.List                  as List
+import qualified Data.Graph                 as Graph
 import qualified Data.Number.CReal          as CReal
 import qualified Data.Ord                   as Ord
 import qualified Data.Ratio                 as Ratio
@@ -73,12 +74,26 @@ prob078 = undefined
 
 -- | Problem 79
 -- [Passcode derivation](http://projecteuler.net/problem=79)
--- global order from piecewise orders
-prob079 :: IO Int
-prob079 = undefined
 
-format079 :: [Int] -> [[Int]]
-format079 = map Utils.integerDigits . IntSet.toList . IntSet.fromList
+-- http://en.wikipedia.org/wiki/Topological_sorting
+-- global ordering from piecewise orderings
+
+prob079 :: IO Int
+prob079 = fmap (Utils.fromDigits . orderDigits . format079) data079
+
+orderDigits :: [(Int,Int,Int)] -> [Int]
+orderDigits xss = Graph.topSort g
+  where
+     edges = Set.toList . Set.fromList $ concatMap (\(a,b,c) -> [(a,b),(b,c)]) xss
+     g = Graph.buildG (0, 9) edges
+
+
+format079 :: [Int] -> [(Int,Int,Int)]
+format079 = map toThreeDigits . IntSet.toList . IntSet.fromList
+  where
+    toThreeDigits n = case Utils.integerDigits n of
+                          [a,b,c] -> (a,b,c)
+                          _       -> error "wrong format!"
 
 data079 :: IO [Int]
 data079 = do
@@ -91,13 +106,18 @@ data079 = do
 -- | Problem 80
 -- [Square root digital expansion](http://projecteuler.net/problem=80)
 prob080 :: Int
-prob080 = sum . map hundredDigitSumOfSqrt . filter (`notElem` map (^2) [1..10]) $ [1..100]
+prob080 = sum . map hundredDigitSumOfSqrt
+              . filter isNotSquared $ [1..100]
+  where
+    isNotSquared x = x `notElem` map (^2) [1..10]
 
+-- The choice of 110 decimal places is to avoid a rounding error like 0.099999 -> 0.10,
+-- which gave me a nasty bug and lots of headache.
 hundredDigitSumOfSqrt :: Int -> Int
 hundredDigitSumOfSqrt = sum . take 100
                             . map Char.digitToInt
                             . filter Char.isDigit
-                            . CReal.showCReal 110  -- to avoid rounding error like 0.099999 -> 0.10
+                            . CReal.showCReal 110
                             . sqrt . fromIntegral
 
 
@@ -112,4 +132,4 @@ hundredDigitSumOfSqrt = sum . take 100
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
-main = print prob080
+main = prob079 >>= print
