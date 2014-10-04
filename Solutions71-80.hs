@@ -58,8 +58,29 @@ prob073 = Set.size . Set.fromList $ concatMap bound [1..12000]
 
 -- | Problem 74
 -- [Digit factorial chains](http://projecteuler.net/problem=74)
+-- To speed up further, I should introduce a IntSet called knowledge
+-- and put Int elements in repeating sequence into it.
+-- The `knowledge` helps truncating unecessary computations in nonRepSequence.
+-- Data.List.mapAccumL would be useful.
 prob074 :: Int
-prob074 = undefined
+prob074 = length $ filter (\n -> chainLength n == 60) [1..999999]
+
+chainLength :: Int -> Int
+chainLength = length . nonRepSequence . iterate digitFactMap
+
+nonRepSequence :: Eq a => [a] -> [a]
+nonRepSequence = npl []
+  where
+    npl stack (x:xs)
+      | x `elem` stack = stack
+      | otherwise      = npl (x:stack) xs
+    npl stack   []     = stack
+
+digitFactMap :: Int -> Int
+digitFactMap = sum . map fact . Utils.integerDigits
+
+fact :: Int -> Int
+fact n = product [1..n]
 
 
 -- | Problem 75
@@ -68,21 +89,43 @@ prob075 :: Int
 prob075 = undefined
 
 
+
 -- | Problem 76
 -- [Counting summations](http://projecteuler.net/problem=76)
 prob076 :: Int
-prob076 = undefined
+prob076 = partitionsP 100 - 1
+
+-- Euler's pentagonal number theorem with memoisation
+partitionsP :: Int -> Int
+partitionsP = (map p [0..] !!)
+  where
+    p 0 = 1
+    p n = sum [sign m * partitionsP (n-k) | (m, k) <- takeWhile (\(_, k) -> k <= n) pentaPairs]
+    sign m = if odd m then 1 else (-1)
+
 
 -- | Problem 77
 -- [Prime summations](http://projecteuler.net/problem=77)
 prob077 :: Int
-prob077 = undefined
+prob077 = head $ filter (\n -> primePartitions n > 5000) [1..]
+
+primePartitions :: Int -> Int
+primePartitions n = integerPartitions n xs
+  where xs = reverse $ Utils.primesTo n
+
+-- [TODO] Rewrite in tail recursive form?
+integerPartitions :: Int -> [Int] -> Int
+integerPartitions 0 _      = 1
+integerPartitions _ []     = 0
+integerPartitions n zs@(x:xs)
+  | n < x     = integerPartitions n xs
+  | otherwise = integerPartitions (n - x) zs + integerPartitions n xs
+
 
 
 -- | Problem 78
 -- [Coin partitions](http://projecteuler.net/problem=78)
 -- Find the least value of n for which p(n), partition function, is divisible by one million.
-
 
 prob078 :: Int
 prob078 = head $ filter (\n -> memP n == 0) [1..]
@@ -165,4 +208,4 @@ hundredDigitSumOfSqrt = sum . take 100
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
-main = print prob072
+main = print prob077
