@@ -19,6 +19,8 @@ import qualified Utils
 
 -- | Problem 71
 -- [Ordered fractions](http://projecteuler.net/problem=71)
+-- Find the numerator of the fraction n/d for d<1000000 immediately to the left of 3/7.
+
 prob071 :: Int
 prob071 = undefined
 
@@ -27,8 +29,19 @@ prob071 = undefined
 
 -- | Problem 72
 -- [Counting fractions](http://projecteuler.net/problem=72)
+--
 prob072 :: Int
-prob072 = undefined
+prob072 = sum $ map countFractions [2..1000000]
+
+countFractions :: Int -> Int
+countFractions d = d - 1 - tmp
+  where
+    distinctPrimes = map fst (Utils.factorInteger d)
+    sign i = if odd i then id else negate
+    term i = sign i . sum $ map (\xs -> -1 + d `div` product xs)
+                                (Utils.combinations i distinctPrimes)
+    tmp = sum $ map term [1..length distinctPrimes]
+
 
 
 -- | Problem 73
@@ -68,8 +81,27 @@ prob077 = undefined
 
 -- | Problem 78
 -- [Coin partitions](http://projecteuler.net/problem=78)
+-- Find the least value of n for which p(n), partition function, is divisible by one million.
+
+
 prob078 :: Int
-prob078 = undefined
+prob078 = head $ filter (\n -> memP n == 0) [1..]
+
+-- Euler's pentagonal number theorem in modulo system
+-- together with memoization
+memP :: Int -> Int
+memP = (map p [0..] !!)
+  where
+    p 0 = 1
+    p n = sum [sign m * memP (n-k) |
+                  (m, k) <- takeWhile (\(_, k) -> k <= n) pentaPairs] `mod` 1000000
+    sign m = if odd m then 1 else (-1)
+
+pentaPairs :: [(Int, Int)]
+pentaPairs = Utils.roundRobin [xs, ys]
+  where
+    xs = zip [1..]     (scanl1 (+) [1,4..])
+    ys = zip [-1,-2..] (scanl1 (+) [2,5..])
 
 
 -- | Problem 79
@@ -89,9 +121,9 @@ orderDigits xss = Graph.topSort g
 
 
 format079 :: [Int] -> [(Int,Int,Int)]
-format079 = map toThreeDigits . IntSet.toList . IntSet.fromList
+format079 = map toTuple . IntSet.toList . IntSet.fromList
   where
-    toThreeDigits n = case Utils.integerDigits n of
+    toTuple n = case Utils.integerDigits n of
                           [a,b,c] -> (a,b,c)
                           _       -> error "wrong format!"
 
@@ -109,6 +141,7 @@ prob080 :: Int
 prob080 = sum . map hundredDigitSumOfSqrt
               . filter isNotSquared $ [1..100]
   where
+    isNotSquared :: Int -> Bool
     isNotSquared x = x `notElem` map (^2) [1..10]
 
 -- The choice of 110 decimal places is to avoid a rounding error like 0.099999 -> 0.10,
@@ -132,4 +165,4 @@ hundredDigitSumOfSqrt = sum . take 100
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 
-main = prob079 >>= print
+main = print prob072
