@@ -3,27 +3,37 @@
 {-# OPTIONS_GHC -fno-warn-type-defaults   #-}
 
 import           Control.Lens               ((^.))
-import qualified Control.Monad              as Monad
+import           Control.Applicative        ((<$>),(<*>))
+import           Data.Vector                ((!))
 import qualified Data.ByteString.Lazy.Char8 as BLC8
 import qualified Data.Char                  as Char
 import qualified Data.IntSet                as IntSet
 import qualified Data.List                  as List
 import qualified Data.Graph                 as Graph
 import qualified Data.Number.CReal          as CReal
-import qualified Data.Ord                   as Ord
 import qualified Data.Ratio                 as Ratio
 import qualified Data.Set                   as Set
+import qualified Data.Vector                as Vector
 import qualified Network.Wreq               as Wreq
 import           System.Environment         (getArgs)
 import qualified Utils
+
 
 -- | Problem 71
 -- [Ordered fractions](http://projecteuler.net/problem=71)
 -- Find the numerator of the fraction n/d for d<1000000 immediately to the left of 3/7.
 
 prob071 :: Int
-prob071 = undefined
+prob071 = Ratio.numerator $ getLeftOf (3 Ratio.% 7) 1000000
 
+getLeftOf :: Ratio.Ratio Int -> Int -> Ratio.Ratio Int
+getLeftOf frac d = frac - minimum deltas
+  where
+    lower = frac * (1 -  1 Ratio.% d)
+    upper = frac * (1 - (1 Ratio.% d) / 1000)
+    candidates = filter (\n -> ceiling (fromIntegral n * lower)
+                              <= floor (fromIntegral n * upper)) [1..d]
+    deltas = [frac - floor (upper * fromIntegral i) Ratio.% i | i <- candidates]
 
 
 
@@ -56,6 +66,7 @@ prob073 = Set.size . Set.fromList $ concatMap bound [1..12000]
     bound i = map (Ratio.% i) [ceiling (fromIntegral i * lower) .. floor (fromIntegral i * upper)]
 
 
+
 -- | Problem 74
 -- [Digit factorial chains](http://projecteuler.net/problem=74)
 -- To speed up further, I should introduce a IntSet called knowledge
@@ -83,25 +94,51 @@ fact :: Int -> Int
 fact n = product [1..n]
 
 
+
 -- | Problem 75
 -- [Singular integer right triangles](http://projecteuler.net/problem=75)
 prob075 :: Int
-prob075 = undefined
+prob075 = length . filter (\(_, cnt) -> cnt == 1)
+                 . Utils.frequencies
+                 . concatMap (\x -> [x,2*x..maxL])
+                 . map sum $ ppt maxL
+  where maxL = 1500000
+
+-- primitive pythagorean triangles
+ppt :: Int -> [[Int]]
+ppt maxL = concat . takeWhile (not . null)
+                  . iterate (filter (\xs -> sum xs <= maxL) . dig)
+                  $ [[3,4,5]]
+
+dig :: [[Int]] -> [[Int]]
+dig troikas = matrixMult <$> [matA, matB, matC] <*> troikas
+  where
+    matA = [[1,-2,2],[2,-1,2],[2,-2,3]]
+    matB = [[1,2,2],[2,1,2],[2,2,3]]
+    matC = [[-1,2,2],[-2,1,2],[-2,2,3]]
+
+
+matrixMult :: Num a => [[a]] -> [a] -> [a]
+matrixMult mat v = map (sum . zipWith (*) v) mat
 
 
 
 -- | Problem 76
 -- [Counting summations](http://projecteuler.net/problem=76)
+--
+-- (-1) is because single term (100 = 100) is excluded
 prob076 :: Int
 prob076 = partitionsP 100 - 1
 
 -- Euler's pentagonal number theorem with memoisation
+-- Note: This can easily overflows
 partitionsP :: Int -> Int
 partitionsP = (map p [0..] !!)
   where
     p 0 = 1
-    p n = sum [sign m * partitionsP (n-k) | (m, k) <- takeWhile (\(_, k) -> k <= n) pentaPairs]
-    sign m = if odd m then 1 else (-1)
+    p n = sum [sign m $ partitionsP (n-k) | (m, k) <- takeWhile (\(_, k) -> k <= n) pentaPairs]
+    sign m = if odd m then id else negate
+
 
 
 -- | Problem 77
@@ -128,23 +165,38 @@ integerPartitions n zs@(x:xs)
 -- Find the least value of n for which p(n), partition function, is divisible by one million.
 
 prob078 :: Int
-prob078 = head $ filter (\n -> memP n == 0) [1..]
+prob078 = head $ filter (\n -> partitionsMod ! n == 0) [1..]
 
--- Euler's pentagonal number theorem in modulo system
--- together with memoization
-memP :: Int -> Int
-memP = (map p [0..] !!)
+-- Vector implementation
+partitionsMod :: Vector.Vector Int
+partitionsMod = Vector.generate nMax p
   where
+    nMax = 100000
+    sign m = if odd m then id else negate
     p 0 = 1
-    p n = sum [sign m * memP (n-k) |
-                  (m, k) <- takeWhile (\(_, k) -> k <= n) pentaPairs] `mod` 1000000
-    sign m = if odd m then 1 else (-1)
+    p n = sum [sign m $ partitionsMod ! (n-k) |
+                    (m, k) <- takeWhile (\(_, k) -> k <= n) pentaPairs] `mod` 1000000
+
+
+-- Euler's pentagonal number theorem (partition function) in modulo system
+-- together with memoization
+
+-- prob078 = head $ filter (\n -> memP n == 0) [1..]
+-- memP :: Int -> Int
+-- memP = (map p [0..] !!)
+--   where
+--     p 0 = 1
+--     p n = sum [sign m $ memP (n-k) |
+--                   (m, k) <- takeWhile (\(_, k) -> k <= n) pentaPairs] `mod` 1000000
+--     sign m = if odd m then id else negate
 
 pentaPairs :: [(Int, Int)]
 pentaPairs = Utils.roundRobin [xs, ys]
   where
     xs = zip [1..]     (scanl1 (+) [1,4..])
     ys = zip [-1,-2..] (scanl1 (+) [2,5..])
+
+
 
 
 -- | Problem 79
@@ -199,13 +251,11 @@ hundredDigitSumOfSqrt = sum . take 100
 
 
 -- Interface
+select :: Int -> IO Int
+select 79 = prob079
+select n = return $ [prob071, prob072, prob073, prob074, prob075,
+                     prob076, prob077, prob078,       0, prob080] !! (n - 71)
 
--- select :: Int -> IO Int
--- select 79 = prob079
--- select n = return $ [prob071, prob072, prob073, prob074, prob075,
---                      prob076, prob077,       0,       0, prob080] !! (n - 71)
 
 main :: IO ()
--- main = getArgs >>= return . read . head >>= select >>= print
-
-main = print prob077
+main = getArgs >>= return . read . head >>= select >>= print
