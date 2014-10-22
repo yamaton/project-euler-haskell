@@ -371,6 +371,7 @@ primes n
       ub = floor $ x * (log x + log (log x))
 
 
+
 {- | Generate primes less than or equal to n
 
 >>> primesTo 20
@@ -381,6 +382,16 @@ primesTo :: Int -> [Int]
 primesTo n
   | n < 2     = []
   | otherwise = [i | (i, True) <- assocs $ sieve n]
+
+
+{- | Number of primes less than or equal to x
+
+>>> primePi 50
+15
+
+-}
+primePi :: Int -> Int
+primePi = length . primesTo
 
 
 {- | Return factors by a list of (prime, exponent)
