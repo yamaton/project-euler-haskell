@@ -258,4 +258,4 @@ select n = return $ [prob071, prob072, prob073, prob074, prob075,
 
 
 main :: IO ()
-main = getArgs >>= return . read . head >>= select >>= print
+main = fmap (read . head) getArgs >>= select >>= print
