@@ -76,6 +76,8 @@ data011 =  "08 02 22 97 38 15 00 40 00 75 04 05 07 78 52 12 50 77 91 08\n\
 -- [Highly divisible triangular number](http://projecteuler.net/problem=12)
 -- What is the value of the first triangle number to have over five hundred divisors?
 --
+-- Note triangular number sequence may be given as scanl1 (+) [1..]
+--
 -- >>> Utils.divisorsCount 12
 -- 6
 triangleNumber :: Int -> Int
@@ -92,11 +94,11 @@ prob012 = head [x | i <- [1..], let x = triangleNumber i, Utils.divisorsCount x 
 -- | Problem 13
 -- [Large sum](http://projecteuler.net/problem=13)
 -- Work out the first ten digits of the sum of the following one-hundred 50-digit numbers.
-data013 :: [Integer]
-data013 = map read . lines $ raw013
-
 prob013 :: Int
 prob013 = read . take 10 . show . sum $ data013
+
+data013 :: [Integer]
+data013 = map read . lines $ raw013
 
 raw013 :: String
 raw013 = "\
@@ -212,16 +214,12 @@ collatz n
   | even n    = n `div` 2
   | otherwise = 3 * n + 1
 
--- collatzLen :: Int -> Int
--- collatzLen 1 = 1
--- collatzLen n = 1 + collatzLen (collatz n)
-
--- tail-recursive accumulator version
+-- tail-recursive version
 collatzLen :: Int -> Int
-collatzLen n = acc n 1
+collatzLen n = collen n 1
   where
-    acc 1 len = len
-    acc n len = acc (collatz n) (len + 1)
+    collen 1 acc = acc
+    collen n acc = collen (collatz n) (acc + 1)
 
 prob014 :: Int
 prob014 = snd $ maximum [ (collatzLen i, i) | i <- [1..1000000-1] ]
