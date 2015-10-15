@@ -133,8 +133,10 @@ prob026 = snd . maximum . map (\n -> (recurringCycle n, n)) . drop 3 . Utils.pri
 
 -- Facts:
 -- f(0) = b             so, b must be prime
--- f(1) = 1 + a + b     so, a must be an odd number unless b = 2 is chosen[*].
---   [*] When b = 2, f(2) = 6 + 2a is not a prime number hence disregard the case.
+-- f(1) = 1 + a + b     so, a must be an odd number (unless b = 2[*]).
+--   [*] When b = 2, f(2) = 2(3 + a) hence it is not prime.
+--       When b = -2, f(2) = 2(1 + a) hence it is not prime, either;
+--       Therefore disregared even b. 
 
 formula027 :: Int -> Int -> Int -> Int
 formula027 a b n = n*n + a*n + b
@@ -200,5 +202,3 @@ select n  = return $ [prob021,       0, prob023, prob024, prob025,
 main :: IO ()
 -- main = getArgs >>= return . read . head >>= select >>= print
 main = print =<< select =<< Monad.liftM (read . head) getArgs
-
-
