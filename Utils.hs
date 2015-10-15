@@ -12,7 +12,7 @@ import           Data.Array.Unboxed  (UArray, assocs)
 import qualified Data.Char           as Char
 import           Data.Hashable       (Hashable)
 import qualified Data.List           as List
-import qualified Data.Map            as Map
+import qualified Data.Map.Strict     as Map
 import qualified Data.Ord            as Ord
 import qualified Data.Set            as Set
 import qualified Numeric
@@ -24,7 +24,7 @@ import qualified Numeric
 
 {- | partition' n d xs
      generates sublists of length n with offset d.
-     [This version cannot handle infinite series xs!]
+     [This version cannot handle infinite series]
 
 >>> partition' 4 2 [1..7]
 [[1,2,3,4],[3,4,5,6]]
@@ -38,7 +38,7 @@ partition' n d xs = helper (length xs) xs
 
 {- | partition n d xs
      generates sublists of length n with offset d.
-     [This nicely handles infinite series xs!]
+     [This nicely handles infinite series]
 
     `groupOf n d xs` might be better name for the function,
      especially because List.partition already exists in Haskell.
@@ -412,7 +412,7 @@ primePi = length . primesTo
 factorInteger :: Int -> [(Int, Int)]
 factorInteger 0 = [(0, 1)]
 factorInteger 1 = [(1, 1)]
-factorInteger n = frequencies $ factor n
+factorInteger n = frequencies (factor n)
   where
     ps = primesTo . round . sqrt . fromIntegral $ n
     factor :: Int -> [Int]
@@ -592,17 +592,57 @@ hexToInt = fst . head . Numeric.readHex
 
 -- taken from McBride-Paterson "Applicative Programming with Effects"
 {- | Transpose matrix (a list of a list)
+
 >>> transpose [[1,2,3],[4,5,6]]
 [[1,4],[2,5],[3,6]]
 
 -}
 -- -> Use List.transpose
 transpose :: [[a]] -> [[a]]
-transpose [] = repeat []
+-- transpose [] = repeat []
 -- transpose (xs:xss) = zipWith (:) xs (transpose xss)
--- This rewriting is suggested by HLint. Nice!
-transpose xss = foldr (zipWith (:)) (repeat []) xss
+-- Following suggested by HLint. Nice.
+transpose = foldr (zipWith (:)) (repeat [])
 
+
+
+{- | takeWhileList
+
+>>> takeWhileList (\xs -> Set.size (Set.fromList xs) < 4) [1,2,3,2,1,4,5,6,1]
+[1,2,3,2,1]
+-}
+takeWhileList :: ([a] -> Bool) -> [a] -> [a]
+takeWhileList f = helper []
+  where
+    helper acc [] = reverse acc
+    helper acc (y:ys)
+      | f acc     = helper (y:acc) ys
+      | otherwise = reverse acc
+
+
+dropWhileList :: ([a] -> Bool) -> [a] -> [a]
+dropWhileList _ [] = []
+dropWhileList _ _ = undefined
+
+
+spanList :: ([a] -> Bool) -> [a] -> ([a], [a])
+spanList _ [] = ([], [])
+spanList _ _ = undefined
+
+breakList :: ([a] -> Bool) -> [a] -> ([a], [a])
+breakList f = spanList (not . f)
+
+
+-- continuedFraction :: Rational -> [Int]
+
+
+-- Find all elements instead of the last element found by the maximumBy
+--allMaximumBy :: (a -> a -> Ordering) -> [a] -> [a]
+--allMaximumBy = undefined
+
+-- Find all elements instead of the last element found by the minimumBy
+--allMinimumBy :: (a -> a -> Ordering) -> [a] -> [a]
+--allMinimumBy = undefined
 
 
 -- | detect cycle
